@@ -60,6 +60,9 @@ void boot_UartInit(void)
 
 int main(void)
 {
+    uint32_t *ptrVector;
+    void (*ptrReset)(void);
+    uint8_t isBoot = 1;
     boot_clockInit();
     boot_gpioInit();
     boot_UartInit();
@@ -67,20 +70,28 @@ int main(void)
     if (GPIO_ReadInputDataBit(BUTTON_PORT, BUTTON_PIN) == RESET)
     {
         /* Enter bootloader mode, load program to ram and run to program */
-        while (1)
+        while (isBoot)
         {
-            Hex_receive();
+            isBoot = Hex_receive();
         }
     }
 
-    /* Idle */
-    GPIO_SetBits(LED_PORT, LED_PIN);
-    // USART_SendData(BOOT_UART, 'a');
-    // while (USART_GetFlagStatus(BOOT_UART, USART_FLAG_TXE) != 1);
-    // USART_SendData(BOOT_UART, 'b');
-    // while (USART_GetFlagStatus(BOOT_UART, USART_FLAG_TXE) != 1);
-    // USART_SendData(BOOT_UART, 'c');
-    // while (USART_GetFlagStatus(BOOT_UART, USART_FLAG_TXE) != 1);
+    /* Start the app */
+    // GPIO_SetBits(LED_PORT, LED_PIN);
+    NVIC_DisableIRQ(UART_IRQ);
+    USART_ITConfig(BOOT_UART, USART_IT_RXNE, DISABLE);
+    USART_Cmd(BOOT_UART, DISABLE);
+    USART_DeInit(BOOT_UART);
+    GPIO_DeInit(LED_PORT);
+    GPIO_DeInit(BUTTON_PORT);
+    GPIO_AFIODeInit();
+    RCC_APB2PeriphClockCmd(
+        UART_CLOCK | LED_CLOCK | RCC_APB2Periph_AFIO
+        | BUTTON_CLOCK, DISABLE);
+
+    ptrVector = &_APP_VECTOR_TABLE;
+    ptrReset = (void (*)(void))(ptrVector[1]);    // reset handler address
+    ptrReset();         // start application
     while (1)
     {
     }

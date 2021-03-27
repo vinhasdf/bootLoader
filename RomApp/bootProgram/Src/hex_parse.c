@@ -1,4 +1,5 @@
 #include "stm32f10x_usart.h"
+#include "stm32f10x_flash.h"
 #include "main.h"
 #include "queue.h"
 #include <stdio.h>
@@ -18,7 +19,6 @@ typedef struct {
     uint8_t *add;
 } hex_line;
 
-uint32_t VectorTable_Addr = 0xFFFFFFFF;
 uint32_t ResetHandler_Addr = 0xFFFFFFFF;
 uint32_t Add_Addr;
 
@@ -166,10 +166,6 @@ uint8_t isValidHex(hex_line *out, queueEntry *dat)
     {
         /* data record */
         out->add = (uint8_t *)(Add_Addr + (uint32_t)address);
-        if ((uint32_t)(out->add) < VectorTable_Addr)
-        {
-            VectorTable_Addr = (uint32_t)(out->add);
-        }
 
         for (i = 0; i < out->length; i++)
         {
@@ -289,19 +285,51 @@ uint8_t isValidHex(hex_line *out, queueEntry *dat)
     return 0;
 }
 
-void Hex_receive(void)
+/*
+    return value:
+    0 -> success
+    1 -> busy
+*/
+uint8_t Hex_receive(void)
 {
     hex_line line;
     uint8_t i;
-    void (*ptrResethandler)(void);
+    uint8_t retVal;
+    uint32_t page_add;
+    uint32_t app_size;
+    FLASH_Status flash_status;
     char buff[100] = {0};
 
     switch (Hex_state)
     {
     case HEX_INIT_SEQUENCE:
+        /* Erase all old application code from _APP_VECTOR_TABLE to _APP_VECTOR_TABLE + 52K */
+        /* _APP_VECTOR_TABLE is align page */
+        FLASH_Unlock();
+        page_add = (uint32_t)&_APP_VECTOR_TABLE;
+        app_size = (uint32_t)&_APP_ROM_SIZE;
+        app_size /= 1024U;
+        for (i = 0; i < app_size; i++)
+        {
+            flash_status = FLASH_ErasePage(page_add);
+            if (flash_status != FLASH_COMPLETE)
+            {
+                /* Error to erase */
+                Hex_state = HEX_FAIL;
+                FLASH_Lock();
+                hex_transmitStr("Erase program error\n");
+                retVal = 1;
+                return retVal;
+            }
+            page_add += 1024U;       /* increase 1K */
+        }
+        FLASH_Lock();
+        // sprintf(buff, "%lX\n", app_size);
+        // hex_transmitStr(buff);
         hex_transmitStr("Welcom to bootloader program\n");
         hex_transmitStr("Please load your hex file to the MCU\n");
         Hex_state = HEX_RECEIVE_DATA;
+        retVal = 1;
         break;
 
     case HEX_RECEIVE_DATA:
@@ -311,13 +339,46 @@ void Hex_receive(void)
             if (isValidHex(&line, getreadQueueEntry()) == 0)
             {
                 getQueueEntry();    /* decrease queue size */
-                hex_transmitStr("Parse successful\n");
-
-                /* Write to RAM */
-                for (i = 0; i < line.length; i++)
+                /* Write to Flash */
+                if (line.length > 0)
                 {
-                    line.add[i] = line.buff[i];
+                    FLASH_Unlock();
+                    for (i = 0; (int8_t)i <= (int8_t)((int8_t)line.length - 4); i += 4)
+                    {
+                        flash_status = FLASH_ProgramWord((uint32_t)&line.add[i], 
+                            *(uint32_t *)&line.buff[i]);
+                        if (flash_status != FLASH_COMPLETE)
+                        {
+                            /* Error to erase */
+                            Hex_state = HEX_FAIL;
+                            FLASH_Lock();
+                            sprintf(buff, "Program error: %d", flash_status);
+                            hex_transmitStr(buff);
+                            retVal = 1;
+                            return retVal;
+                        }
+                    }
+                    if ((line.length % 4) == 0)
+                    {
+                        line.buff[i + 1] = line.add[i + 1];     /* Save old value from i + 1 memory */
+                        line.buff[i + 2] = line.add[i + 2];
+                        line.buff[i + 3] = line.add[i + 3];
+                        flash_status = FLASH_ProgramWord((uint32_t)&line.add[i], 
+                            *(uint32_t *)&line.buff[i]);
+                        if (flash_status != FLASH_COMPLETE)
+                        {
+                            /* Error to erase */
+                            Hex_state = HEX_FAIL;
+                            FLASH_Lock();
+                            sprintf(buff, "Program error: %d", flash_status);
+                            hex_transmitStr(buff);
+                            retVal = 1;
+                            return retVal;
+                        }
+                    }
+                    FLASH_Lock();
                 }
+                hex_transmitStr("Parse successful\n");
             }
             else
             {
@@ -325,44 +386,28 @@ void Hex_receive(void)
                 Hex_state = HEX_FAIL;
             }
         }
+        retVal = 1;
         break;
 
     case HEX_DONE:
         hex_transmitStr("Done\n");
-
-        if (ResetHandler_Addr == 0xFFFFFFFF)
-        {
-            /* Read vector table */
-            ResetHandler_Addr = *(((uint32_t *)VectorTable_Addr) + 1);
-        }
-
-        sprintf(buff, "Start the application at %lX address and vector table at %lX\n", 
-            ResetHandler_Addr, VectorTable_Addr);
+        sprintf(buff, "Start the application at %lX address\n", 
+            ResetHandler_Addr);
         hex_transmitStr(buff);
-
-        /* Deinit resources */
-        NVIC_DisableIRQ(UART_IRQ);
-        USART_ITConfig(BOOT_UART, USART_IT_RXNE, DISABLE);
-        USART_Cmd(BOOT_UART, DISABLE);
-        USART_DeInit(BOOT_UART);
-        GPIO_DeInit(LED_PORT);
-        GPIO_DeInit(BUTTON_PORT);
-        GPIO_AFIODeInit();
-        RCC_APB2PeriphClockCmd(
-            UART_CLOCK | LED_CLOCK | RCC_APB2Periph_AFIO
-            | BUTTON_CLOCK, DISABLE);
-
-        ptrResethandler = (void (*)(void))ResetHandler_Addr;
-        ptrResethandler();
         Hex_state = HEX_DEFAULT;
+        retVal = 0;
         break;
     
     case HEX_FAIL:
         hex_transmitStr("Exit the bootloader\n");
         Hex_state = HEX_DEFAULT;
+        retVal = 1;
         break;
 
     default:
+        retVal = 1;
         break;
     }
+
+    return retVal;
 }

@@ -16,4 +16,7 @@
 #define BUTTON_CLOCK                RCC_APB2Periph_GPIOA
 #define UART_IRQ                    USART1_IRQn
 
+extern uint32_t                     _APP_VECTOR_TABLE;
+extern uint32_t                     _APP_ROM_SIZE;
+
 #endif  /* MAIN_H */
