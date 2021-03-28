@@ -1,0 +1,2126 @@
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 1
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"hex_parse.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.USART1_IRQHandler,"ax",%progbits
+  16              		.align	1
+  17              		.global	USART1_IRQHandler
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	USART1_IRQHandler:
+  25              	.LFB70:
+  26              		.file 1 "Src/hex_parse.c"
+   1:Src/hex_parse.c **** #include "stm32f10x_usart.h"
+   2:Src/hex_parse.c **** #include "stm32f10x_flash.h"
+   3:Src/hex_parse.c **** #include "main.h"
+   4:Src/hex_parse.c **** #include "queue.h"
+   5:Src/hex_parse.c **** #include <stdio.h>
+   6:Src/hex_parse.c **** 
+   7:Src/hex_parse.c **** #define HEX_INIT_SEQUENCE           0x00U
+   8:Src/hex_parse.c **** #define HEX_RECEIVE_DATA            0x01U
+   9:Src/hex_parse.c **** #define HEX_DONE                    0x02U
+  10:Src/hex_parse.c **** #define HEX_FAIL                    0x03U
+  11:Src/hex_parse.c **** #define HEX_DEFAULT                 0xFFU
+  12:Src/hex_parse.c **** 
+  13:Src/hex_parse.c **** uint8_t Hex_state = HEX_INIT_SEQUENCE;
+  14:Src/hex_parse.c **** queueEntry *CurrentEntry;
+  15:Src/hex_parse.c **** 
+  16:Src/hex_parse.c **** typedef struct {
+  17:Src/hex_parse.c ****     uint8_t buff[MAX_QUEUE_ENTRY_SIZE];
+  18:Src/hex_parse.c ****     uint8_t length;
+  19:Src/hex_parse.c ****     uint8_t *add;
+  20:Src/hex_parse.c **** } hex_line;
+  21:Src/hex_parse.c **** 
+  22:Src/hex_parse.c **** uint32_t ResetHandler_Addr = 0xFFFFFFFF;
+  23:Src/hex_parse.c **** uint32_t Add_Addr;
+  24:Src/hex_parse.c **** 
+  25:Src/hex_parse.c **** /* receive hex data via uart and program it to ram */
+  26:Src/hex_parse.c **** void USART1_IRQHandler(void)
+  27:Src/hex_parse.c **** {
+  27              		.loc 1 27 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31 0000 08B5     		push	{r3, lr}
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 2
+
+
+  32              	.LCFI0:
+  33              		.cfi_def_cfa_offset 8
+  34              		.cfi_offset 3, -8
+  35              		.cfi_offset 14, -4
+  28:Src/hex_parse.c ****     if (Hex_state != HEX_RECEIVE_DATA)
+  36              		.loc 1 28 5 view .LVU1
+  37              		.loc 1 28 19 is_stmt 0 view .LVU2
+  38 0002 1D4B     		ldr	r3, .L10
+  39 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  40              		.loc 1 28 8 view .LVU3
+  41 0006 012B     		cmp	r3, #1
+  42 0008 1CD1     		bne	.L7
+  29:Src/hex_parse.c ****     {
+  30:Src/hex_parse.c ****         (void)USART_ReceiveData(BOOT_UART); /* flush data */
+  31:Src/hex_parse.c ****         return;
+  32:Src/hex_parse.c ****     }
+  33:Src/hex_parse.c ****     
+  34:Src/hex_parse.c ****     if (CurrentEntry == 0)
+  43              		.loc 1 34 5 is_stmt 1 view .LVU4
+  44              		.loc 1 34 22 is_stmt 0 view .LVU5
+  45 000a 1C4B     		ldr	r3, .L10+4
+  46 000c 1B68     		ldr	r3, [r3]
+  47              		.loc 1 34 8 view .LVU6
+  48 000e EBB1     		cbz	r3, .L8
+  49              	.L4:
+  35:Src/hex_parse.c ****     {
+  36:Src/hex_parse.c ****         CurrentEntry = getFreeQueueEntry();
+  37:Src/hex_parse.c ****         if (CurrentEntry == 0)
+  38:Src/hex_parse.c ****         {
+  39:Src/hex_parse.c ****             Hex_state = HEX_FAIL;
+  40:Src/hex_parse.c ****             (void)USART_ReceiveData(BOOT_UART); /* flush data */
+  41:Src/hex_parse.c ****             return;
+  42:Src/hex_parse.c ****         }
+  43:Src/hex_parse.c ****     }
+  44:Src/hex_parse.c **** 
+  45:Src/hex_parse.c ****     CurrentEntry->buff[CurrentEntry->pos] = (uint8_t)USART_ReceiveData(BOOT_UART);
+  50              		.loc 1 45 5 is_stmt 1 view .LVU7
+  51              		.loc 1 45 54 is_stmt 0 view .LVU8
+  52 0010 1B48     		ldr	r0, .L10+8
+  53 0012 FFF7FEFF 		bl	USART_ReceiveData
+  54              	.LVL0:
+  55              		.loc 1 45 17 view .LVU9
+  56 0016 194B     		ldr	r3, .L10+4
+  57 0018 1A68     		ldr	r2, [r3]
+  58              		.loc 1 45 36 view .LVU10
+  59 001a 92F83210 		ldrb	r1, [r2, #50]	@ zero_extendqisi2
+  60              		.loc 1 45 43 view .LVU11
+  61 001e 5054     		strb	r0, [r2, r1]
+  46:Src/hex_parse.c ****     if (CurrentEntry->buff[CurrentEntry->pos] == '\n')
+  62              		.loc 1 46 5 is_stmt 1 view .LVU12
+  63              		.loc 1 46 21 is_stmt 0 view .LVU13
+  64 0020 1968     		ldr	r1, [r3]
+  65              		.loc 1 46 40 view .LVU14
+  66 0022 91F83230 		ldrb	r3, [r1, #50]	@ zero_extendqisi2
+  67              		.loc 1 46 27 view .LVU15
+  68 0026 CA5C     		ldrb	r2, [r1, r3]	@ zero_extendqisi2
+  69              		.loc 1 46 8 view .LVU16
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 3
+
+
+  70 0028 0A2A     		cmp	r2, #10
+  71 002a 1CD0     		beq	.L9
+  47:Src/hex_parse.c ****     {
+  48:Src/hex_parse.c ****         CurrentEntry->pos++;
+  49:Src/hex_parse.c ****         CurrentEntry = 0;   /* reset to next queue */
+  50:Src/hex_parse.c ****         putQueueEntry();
+  51:Src/hex_parse.c ****     }
+  52:Src/hex_parse.c ****     else
+  53:Src/hex_parse.c ****     {
+  54:Src/hex_parse.c ****         CurrentEntry->pos++;
+  72              		.loc 1 54 9 is_stmt 1 view .LVU17
+  73              		.loc 1 54 26 is_stmt 0 view .LVU18
+  74 002c 0133     		adds	r3, r3, #1
+  75 002e DBB2     		uxtb	r3, r3
+  55:Src/hex_parse.c ****         CurrentEntry->pos %= MAX_QUEUE_ENTRY_SIZE;
+  76              		.loc 1 55 9 is_stmt 1 view .LVU19
+  77              		.loc 1 55 27 is_stmt 0 view .LVU20
+  78 0030 144A     		ldr	r2, .L10+12
+  79 0032 A2FB0302 		umull	r0, r2, r2, r3
+  80 0036 1209     		lsrs	r2, r2, #4
+  81 0038 3220     		movs	r0, #50
+  82 003a 00FB1233 		mls	r3, r0, r2, r3
+  83 003e 81F83230 		strb	r3, [r1, #50]
+  84              	.L1:
+  56:Src/hex_parse.c ****     }
+  57:Src/hex_parse.c **** }
+  85              		.loc 1 57 1 view .LVU21
+  86 0042 08BD     		pop	{r3, pc}
+  87              	.L7:
+  30:Src/hex_parse.c ****         return;
+  88              		.loc 1 30 9 is_stmt 1 view .LVU22
+  30:Src/hex_parse.c ****         return;
+  89              		.loc 1 30 15 is_stmt 0 view .LVU23
+  90 0044 0E48     		ldr	r0, .L10+8
+  91 0046 FFF7FEFF 		bl	USART_ReceiveData
+  92              	.LVL1:
+  31:Src/hex_parse.c ****     }
+  93              		.loc 1 31 9 is_stmt 1 view .LVU24
+  94 004a FAE7     		b	.L1
+  95              	.L8:
+  36:Src/hex_parse.c ****         if (CurrentEntry == 0)
+  96              		.loc 1 36 9 view .LVU25
+  36:Src/hex_parse.c ****         if (CurrentEntry == 0)
+  97              		.loc 1 36 24 is_stmt 0 view .LVU26
+  98 004c FFF7FEFF 		bl	getFreeQueueEntry
+  99              	.LVL2:
+  36:Src/hex_parse.c ****         if (CurrentEntry == 0)
+ 100              		.loc 1 36 22 view .LVU27
+ 101 0050 0A4B     		ldr	r3, .L10+4
+ 102 0052 1860     		str	r0, [r3]
+  37:Src/hex_parse.c ****         {
+ 103              		.loc 1 37 9 is_stmt 1 view .LVU28
+  37:Src/hex_parse.c ****         {
+ 104              		.loc 1 37 12 is_stmt 0 view .LVU29
+ 105 0054 0028     		cmp	r0, #0
+ 106 0056 DBD1     		bne	.L4
+  39:Src/hex_parse.c ****             (void)USART_ReceiveData(BOOT_UART); /* flush data */
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 4
+
+
+ 107              		.loc 1 39 13 is_stmt 1 view .LVU30
+  39:Src/hex_parse.c ****             (void)USART_ReceiveData(BOOT_UART); /* flush data */
+ 108              		.loc 1 39 23 is_stmt 0 view .LVU31
+ 109 0058 074B     		ldr	r3, .L10
+ 110 005a 0322     		movs	r2, #3
+ 111 005c 1A70     		strb	r2, [r3]
+  40:Src/hex_parse.c ****             return;
+ 112              		.loc 1 40 13 is_stmt 1 view .LVU32
+  40:Src/hex_parse.c ****             return;
+ 113              		.loc 1 40 19 is_stmt 0 view .LVU33
+ 114 005e 0848     		ldr	r0, .L10+8
+ 115 0060 FFF7FEFF 		bl	USART_ReceiveData
+ 116              	.LVL3:
+  41:Src/hex_parse.c ****         }
+ 117              		.loc 1 41 13 is_stmt 1 view .LVU34
+ 118 0064 EDE7     		b	.L1
+ 119              	.L9:
+  48:Src/hex_parse.c ****         CurrentEntry = 0;   /* reset to next queue */
+ 120              		.loc 1 48 9 view .LVU35
+  48:Src/hex_parse.c ****         CurrentEntry = 0;   /* reset to next queue */
+ 121              		.loc 1 48 26 is_stmt 0 view .LVU36
+ 122 0066 0133     		adds	r3, r3, #1
+ 123 0068 81F83230 		strb	r3, [r1, #50]
+  49:Src/hex_parse.c ****         putQueueEntry();
+ 124              		.loc 1 49 9 is_stmt 1 view .LVU37
+  49:Src/hex_parse.c ****         putQueueEntry();
+ 125              		.loc 1 49 22 is_stmt 0 view .LVU38
+ 126 006c 034B     		ldr	r3, .L10+4
+ 127 006e 0022     		movs	r2, #0
+ 128 0070 1A60     		str	r2, [r3]
+  50:Src/hex_parse.c ****     }
+ 129              		.loc 1 50 9 is_stmt 1 view .LVU39
+ 130 0072 FFF7FEFF 		bl	putQueueEntry
+ 131              	.LVL4:
+ 132 0076 E4E7     		b	.L1
+ 133              	.L11:
+ 134              		.align	2
+ 135              	.L10:
+ 136 0078 00000000 		.word	.LANCHOR0
+ 137 007c 00000000 		.word	CurrentEntry
+ 138 0080 00380140 		.word	1073821696
+ 139 0084 1F85EB51 		.word	1374389535
+ 140              		.cfi_endproc
+ 141              	.LFE70:
+ 143              		.section	.text.hex_transmitStr,"ax",%progbits
+ 144              		.align	1
+ 145              		.global	hex_transmitStr
+ 146              		.syntax unified
+ 147              		.thumb
+ 148              		.thumb_func
+ 149              		.fpu softvfp
+ 151              	hex_transmitStr:
+ 152              	.LVL5:
+ 153              	.LFB71:
+  58:Src/hex_parse.c **** 
+  59:Src/hex_parse.c **** void hex_transmitStr(char *s)
+  60:Src/hex_parse.c **** {
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 5
+
+
+ 154              		.loc 1 60 1 view -0
+ 155              		.cfi_startproc
+ 156              		@ args = 0, pretend = 0, frame = 0
+ 157              		@ frame_needed = 0, uses_anonymous_args = 0
+ 158              		.loc 1 60 1 is_stmt 0 view .LVU41
+ 159 0000 10B5     		push	{r4, lr}
+ 160              	.LCFI1:
+ 161              		.cfi_def_cfa_offset 8
+ 162              		.cfi_offset 4, -8
+ 163              		.cfi_offset 14, -4
+ 164 0002 0446     		mov	r4, r0
+  61:Src/hex_parse.c ****     while (*s != '\0')
+ 165              		.loc 1 61 5 is_stmt 1 view .LVU42
+ 166              		.loc 1 61 11 is_stmt 0 view .LVU43
+ 167 0004 09E0     		b	.L13
+ 168              	.LVL6:
+ 169              	.L15:
+  62:Src/hex_parse.c ****     {
+  63:Src/hex_parse.c ****         USART_SendData(BOOT_UART, (uint16_t)(*s));
+ 170              		.loc 1 63 9 is_stmt 1 view .LVU44
+ 171 0006 0748     		ldr	r0, .L17
+ 172 0008 FFF7FEFF 		bl	USART_SendData
+ 173              	.LVL7:
+  64:Src/hex_parse.c ****         while (USART_GetFlagStatus(BOOT_UART, USART_FLAG_TXE) != 1);
+ 174              		.loc 1 64 9 view .LVU45
+ 175              	.L14:
+ 176              		.loc 1 64 68 discriminator 1 view .LVU46
+ 177              		.loc 1 64 15 discriminator 1 view .LVU47
+ 178              		.loc 1 64 16 is_stmt 0 discriminator 1 view .LVU48
+ 179 000c 8021     		movs	r1, #128
+ 180 000e 0548     		ldr	r0, .L17
+ 181 0010 FFF7FEFF 		bl	USART_GetFlagStatus
+ 182              	.LVL8:
+ 183              		.loc 1 64 15 discriminator 1 view .LVU49
+ 184 0014 0128     		cmp	r0, #1
+ 185 0016 F9D1     		bne	.L14
+  65:Src/hex_parse.c ****         s++;
+ 186              		.loc 1 65 9 is_stmt 1 view .LVU50
+ 187              		.loc 1 65 10 is_stmt 0 view .LVU51
+ 188 0018 0134     		adds	r4, r4, #1
+ 189              	.LVL9:
+ 190              	.L13:
+  61:Src/hex_parse.c ****     {
+ 191              		.loc 1 61 11 is_stmt 1 view .LVU52
+  61:Src/hex_parse.c ****     {
+ 192              		.loc 1 61 12 is_stmt 0 view .LVU53
+ 193 001a 2178     		ldrb	r1, [r4]	@ zero_extendqisi2
+  61:Src/hex_parse.c ****     {
+ 194              		.loc 1 61 11 view .LVU54
+ 195 001c 0029     		cmp	r1, #0
+ 196 001e F2D1     		bne	.L15
+  66:Src/hex_parse.c ****     }
+  67:Src/hex_parse.c **** }
+ 197              		.loc 1 67 1 view .LVU55
+ 198 0020 10BD     		pop	{r4, pc}
+ 199              	.LVL10:
+ 200              	.L18:
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 6
+
+
+ 201              		.loc 1 67 1 view .LVU56
+ 202 0022 00BF     		.align	2
+ 203              	.L17:
+ 204 0024 00380140 		.word	1073821696
+ 205              		.cfi_endproc
+ 206              	.LFE71:
+ 208              		.section	.text.validateChar,"ax",%progbits
+ 209              		.align	1
+ 210              		.global	validateChar
+ 211              		.syntax unified
+ 212              		.thumb
+ 213              		.thumb_func
+ 214              		.fpu softvfp
+ 216              	validateChar:
+ 217              	.LVL11:
+ 218              	.LFB72:
+  68:Src/hex_parse.c **** 
+  69:Src/hex_parse.c **** /*  check valid character
+  70:Src/hex_parse.c ****     return value:
+  71:Src/hex_parse.c ****     -1 - fail
+  72:Src/hex_parse.c ****     >=0 - success
+  73:Src/hex_parse.c ****  */
+  74:Src/hex_parse.c **** char validateChar(char c)
+  75:Src/hex_parse.c **** {
+ 219              		.loc 1 75 1 is_stmt 1 view -0
+ 220              		.cfi_startproc
+ 221              		@ args = 0, pretend = 0, frame = 0
+ 222              		@ frame_needed = 0, uses_anonymous_args = 0
+ 223              		@ link register save eliminated.
+ 224              		.loc 1 75 1 is_stmt 0 view .LVU58
+ 225 0000 0346     		mov	r3, r0
+  76:Src/hex_parse.c ****     if (c >= '0' && c <= '9')
+ 226              		.loc 1 76 5 is_stmt 1 view .LVU59
+ 227              		.loc 1 76 18 is_stmt 0 view .LVU60
+ 228 0002 3038     		subs	r0, r0, #48
+ 229              	.LVL12:
+ 230              		.loc 1 76 18 view .LVU61
+ 231 0004 C0B2     		uxtb	r0, r0
+ 232              		.loc 1 76 8 view .LVU62
+ 233 0006 0928     		cmp	r0, #9
+ 234 0008 0AD9     		bls	.L20
+  77:Src/hex_parse.c ****         return c - '0';
+  78:Src/hex_parse.c ****     else if (c >= 'A' && c <= 'F')
+ 235              		.loc 1 78 10 is_stmt 1 view .LVU63
+ 236              		.loc 1 78 23 is_stmt 0 view .LVU64
+ 237 000a A3F14102 		sub	r2, r3, #65
+ 238 000e D2B2     		uxtb	r2, r2
+ 239              		.loc 1 78 13 view .LVU65
+ 240 0010 052A     		cmp	r2, #5
+ 241 0012 06D9     		bls	.L23
+  79:Src/hex_parse.c ****         return c - 'A' + 10;
+  80:Src/hex_parse.c ****     else if (c >= 'a' && c <= 'f')
+ 242              		.loc 1 80 10 is_stmt 1 view .LVU66
+ 243              		.loc 1 80 23 is_stmt 0 view .LVU67
+ 244 0014 A3F16102 		sub	r2, r3, #97
+ 245 0018 D2B2     		uxtb	r2, r2
+ 246              		.loc 1 80 13 view .LVU68
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 7
+
+
+ 247 001a 052A     		cmp	r2, #5
+ 248 001c 04D9     		bls	.L24
+  81:Src/hex_parse.c ****         return c - 'a' + 10;
+  82:Src/hex_parse.c ****     return -1;
+ 249              		.loc 1 82 12 view .LVU69
+ 250 001e FF20     		movs	r0, #255
+ 251              	.L20:
+  83:Src/hex_parse.c **** }
+ 252              		.loc 1 83 1 view .LVU70
+ 253 0020 7047     		bx	lr
+ 254              	.L23:
+  79:Src/hex_parse.c ****         return c - 'A' + 10;
+ 255              		.loc 1 79 9 is_stmt 1 view .LVU71
+  79:Src/hex_parse.c ****         return c - 'A' + 10;
+ 256              		.loc 1 79 24 is_stmt 0 view .LVU72
+ 257 0022 373B     		subs	r3, r3, #55
+ 258 0024 D8B2     		uxtb	r0, r3
+ 259 0026 7047     		bx	lr
+ 260              	.L24:
+  81:Src/hex_parse.c ****         return c - 'a' + 10;
+ 261              		.loc 1 81 9 is_stmt 1 view .LVU73
+  81:Src/hex_parse.c ****         return c - 'a' + 10;
+ 262              		.loc 1 81 24 is_stmt 0 view .LVU74
+ 263 0028 573B     		subs	r3, r3, #87
+ 264 002a D8B2     		uxtb	r0, r3
+ 265 002c 7047     		bx	lr
+ 266              		.cfi_endproc
+ 267              	.LFE72:
+ 269              		.section	.text.isValidHex,"ax",%progbits
+ 270              		.align	1
+ 271              		.global	isValidHex
+ 272              		.syntax unified
+ 273              		.thumb
+ 274              		.thumb_func
+ 275              		.fpu softvfp
+ 277              	isValidHex:
+ 278              	.LVL13:
+ 279              	.LFB73:
+  84:Src/hex_parse.c **** 
+  85:Src/hex_parse.c **** /* 
+  86:Src/hex_parse.c ****     Parse the data and fill in to out
+  87:Src/hex_parse.c ****     Return value: 
+  88:Src/hex_parse.c ****     0 - success
+  89:Src/hex_parse.c ****     < 0 - fail
+  90:Src/hex_parse.c **** */
+  91:Src/hex_parse.c **** uint8_t isValidHex(hex_line *out, queueEntry *dat)
+  92:Src/hex_parse.c **** {
+ 280              		.loc 1 92 1 is_stmt 1 view -0
+ 281              		.cfi_startproc
+ 282              		@ args = 0, pretend = 0, frame = 0
+ 283              		@ frame_needed = 0, uses_anonymous_args = 0
+ 284              		.loc 1 92 1 is_stmt 0 view .LVU76
+ 285 0000 2DE9F84F 		push	{r3, r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 286              	.LCFI2:
+ 287              		.cfi_def_cfa_offset 40
+ 288              		.cfi_offset 3, -40
+ 289              		.cfi_offset 4, -36
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 8
+
+
+ 290              		.cfi_offset 5, -32
+ 291              		.cfi_offset 6, -28
+ 292              		.cfi_offset 7, -24
+ 293              		.cfi_offset 8, -20
+ 294              		.cfi_offset 9, -16
+ 295              		.cfi_offset 10, -12
+ 296              		.cfi_offset 11, -8
+ 297              		.cfi_offset 14, -4
+ 298 0004 0646     		mov	r6, r0
+ 299 0006 0D46     		mov	r5, r1
+  93:Src/hex_parse.c ****     uint8_t length = 0;
+ 300              		.loc 1 93 5 is_stmt 1 view .LVU77
+ 301              	.LVL14:
+  94:Src/hex_parse.c ****     uint8_t i, callength;
+ 302              		.loc 1 94 5 view .LVU78
+  95:Src/hex_parse.c ****     uint8_t index = 0;
+ 303              		.loc 1 95 5 view .LVU79
+  96:Src/hex_parse.c ****     uint16_t address;
+ 304              		.loc 1 96 5 view .LVU80
+  97:Src/hex_parse.c ****     uint8_t checksum = 0, compchecksum;
+ 305              		.loc 1 97 5 view .LVU81
+  98:Src/hex_parse.c ****     uint8_t type;
+ 306              		.loc 1 98 5 view .LVU82
+  99:Src/hex_parse.c ****     char lownib, midlownib, midhighnib, highnib;
+ 307              		.loc 1 99 5 view .LVU83
+ 100:Src/hex_parse.c **** 
+ 101:Src/hex_parse.c ****     for (i = 0; i < dat->pos; i++)
+ 308              		.loc 1 101 5 view .LVU84
+ 309              		.loc 1 101 12 is_stmt 0 view .LVU85
+ 310 0008 0023     		movs	r3, #0
+  93:Src/hex_parse.c ****     uint8_t i, callength;
+ 311              		.loc 1 93 13 view .LVU86
+ 312 000a 1C46     		mov	r4, r3
+ 313              	.LVL15:
+ 314              	.L26:
+ 315              		.loc 1 101 17 is_stmt 1 discriminator 1 view .LVU87
+ 316              		.loc 1 101 24 is_stmt 0 discriminator 1 view .LVU88
+ 317 000c 95F83220 		ldrb	r2, [r5, #50]	@ zero_extendqisi2
+ 318              		.loc 1 101 5 discriminator 1 view .LVU89
+ 319 0010 9A42     		cmp	r2, r3
+ 320 0012 07D9     		bls	.L27
+ 102:Src/hex_parse.c ****     {
+ 103:Src/hex_parse.c ****         if (dat->buff[i] == '\r')
+ 321              		.loc 1 103 9 is_stmt 1 view .LVU90
+ 322              		.loc 1 103 22 is_stmt 0 view .LVU91
+ 323 0014 EA5C     		ldrb	r2, [r5, r3]	@ zero_extendqisi2
+ 324              		.loc 1 103 12 view .LVU92
+ 325 0016 0D2A     		cmp	r2, #13
+ 326 0018 04D0     		beq	.L27
+ 104:Src/hex_parse.c ****         {
+ 105:Src/hex_parse.c ****             break;
+ 106:Src/hex_parse.c ****         }
+ 107:Src/hex_parse.c ****         length++;
+ 327              		.loc 1 107 9 is_stmt 1 discriminator 2 view .LVU93
+ 328              		.loc 1 107 15 is_stmt 0 discriminator 2 view .LVU94
+ 329 001a 0134     		adds	r4, r4, #1
+ 330              	.LVL16:
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 9
+
+
+ 331              		.loc 1 107 15 discriminator 2 view .LVU95
+ 332 001c E4B2     		uxtb	r4, r4
+ 333              	.LVL17:
+ 101:Src/hex_parse.c ****     {
+ 334              		.loc 1 101 31 is_stmt 1 discriminator 2 view .LVU96
+ 101:Src/hex_parse.c ****     {
+ 335              		.loc 1 101 32 is_stmt 0 discriminator 2 view .LVU97
+ 336 001e 0133     		adds	r3, r3, #1
+ 337              	.LVL18:
+ 101:Src/hex_parse.c ****     {
+ 338              		.loc 1 101 32 discriminator 2 view .LVU98
+ 339 0020 DBB2     		uxtb	r3, r3
+ 340              	.LVL19:
+ 101:Src/hex_parse.c ****     {
+ 341              		.loc 1 101 32 discriminator 2 view .LVU99
+ 342 0022 F3E7     		b	.L26
+ 343              	.L27:
+ 108:Src/hex_parse.c ****     }
+ 109:Src/hex_parse.c **** 
+ 110:Src/hex_parse.c ****     /* minimum length */
+ 111:Src/hex_parse.c ****     if (length < 11)
+ 344              		.loc 1 111 5 is_stmt 1 view .LVU100
+ 345              		.loc 1 111 8 is_stmt 0 view .LVU101
+ 346 0024 0A2C     		cmp	r4, #10
+ 347 0026 40F22881 		bls	.L40
+ 112:Src/hex_parse.c ****     {
+ 113:Src/hex_parse.c ****         return -1;
+ 114:Src/hex_parse.c ****     }
+ 115:Src/hex_parse.c **** 
+ 116:Src/hex_parse.c ****     /* First char */
+ 117:Src/hex_parse.c ****     if (dat->buff[index] != ':')
+ 348              		.loc 1 117 5 is_stmt 1 view .LVU102
+ 349              		.loc 1 117 18 is_stmt 0 view .LVU103
+ 350 002a 2B78     		ldrb	r3, [r5]	@ zero_extendqisi2
+ 351              	.LVL20:
+ 352              		.loc 1 117 8 view .LVU104
+ 353 002c 3A2B     		cmp	r3, #58
+ 354 002e 40F02681 		bne	.L41
+ 118:Src/hex_parse.c ****     {
+ 119:Src/hex_parse.c ****         return -2;
+ 120:Src/hex_parse.c ****     }
+ 121:Src/hex_parse.c ****     index++;
+ 355              		.loc 1 121 5 is_stmt 1 view .LVU105
+ 356              	.LVL21:
+ 122:Src/hex_parse.c **** 
+ 123:Src/hex_parse.c ****     /* two byte length */
+ 124:Src/hex_parse.c ****     lownib = validateChar(dat->buff[index + 1]);
+ 357              		.loc 1 124 5 view .LVU106
+ 358              		.loc 1 124 14 is_stmt 0 view .LVU107
+ 359 0032 A878     		ldrb	r0, [r5, #2]	@ zero_extendqisi2
+ 360              	.LVL22:
+ 361              		.loc 1 124 14 view .LVU108
+ 362 0034 FFF7FEFF 		bl	validateChar
+ 363              	.LVL23:
+ 364              		.loc 1 124 14 view .LVU109
+ 365 0038 8046     		mov	r8, r0
+ 366              	.LVL24:
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 10
+
+
+ 125:Src/hex_parse.c ****     highnib = validateChar(dat->buff[index]);
+ 367              		.loc 1 125 5 is_stmt 1 view .LVU110
+ 368              		.loc 1 125 15 is_stmt 0 view .LVU111
+ 369 003a 6878     		ldrb	r0, [r5, #1]	@ zero_extendqisi2
+ 370 003c FFF7FEFF 		bl	validateChar
+ 371              	.LVL25:
+ 126:Src/hex_parse.c ****     if ((lownib == -1) || (highnib == -1))
+ 372              		.loc 1 126 5 is_stmt 1 view .LVU112
+ 127:Src/hex_parse.c ****     {
+ 128:Src/hex_parse.c ****         return -3;
+ 129:Src/hex_parse.c ****     }
+ 130:Src/hex_parse.c ****     out->length = (((uint8_t)highnib << 4) | (uint8_t)lownib);
+ 373              		.loc 1 130 5 view .LVU113
+ 374              		.loc 1 130 44 is_stmt 0 view .LVU114
+ 375 0040 48EA0018 		orr	r8, r8, r0, lsl #4
+ 376              	.LVL26:
+ 377              		.loc 1 130 44 view .LVU115
+ 378 0044 5FFA88F8 		uxtb	r8, r8
+ 379              		.loc 1 130 17 view .LVU116
+ 380 0048 86F83280 		strb	r8, [r6, #50]
+ 131:Src/hex_parse.c ****     callength = length - 11;
+ 381              		.loc 1 131 5 is_stmt 1 view .LVU117
+ 382              		.loc 1 131 15 is_stmt 0 view .LVU118
+ 383 004c 0B3C     		subs	r4, r4, #11
+ 384              	.LVL27:
+ 385              		.loc 1 131 15 view .LVU119
+ 386 004e E3B2     		uxtb	r3, r4
+ 387              	.LVL28:
+ 132:Src/hex_parse.c ****     if ((callength % 2) != 0 || (callength / 2) != out->length)
+ 388              		.loc 1 132 5 is_stmt 1 view .LVU120
+ 389              		.loc 1 132 8 is_stmt 0 view .LVU121
+ 390 0050 14F00104 		ands	r4, r4, #1
+ 391 0054 40F01781 		bne	.L42
+ 392              		.loc 1 132 30 discriminator 1 view .LVU122
+ 393 0058 B8EB530F 		cmp	r8, r3, lsr #1
+ 394 005c 40F01581 		bne	.L43
+ 133:Src/hex_parse.c ****     {
+ 134:Src/hex_parse.c ****         return -4;
+ 135:Src/hex_parse.c ****     }
+ 136:Src/hex_parse.c ****     checksum += out->length;
+ 395              		.loc 1 136 5 is_stmt 1 view .LVU123
+ 396              	.LVL29:
+ 137:Src/hex_parse.c ****     index += 2;
+ 397              		.loc 1 137 5 view .LVU124
+ 138:Src/hex_parse.c **** 
+ 139:Src/hex_parse.c ****     /* 4 byte address */
+ 140:Src/hex_parse.c ****     highnib = validateChar(dat->buff[index]);
+ 398              		.loc 1 140 5 view .LVU125
+ 399              		.loc 1 140 15 is_stmt 0 view .LVU126
+ 400 0060 E878     		ldrb	r0, [r5, #3]	@ zero_extendqisi2
+ 401              	.LVL30:
+ 402              		.loc 1 140 15 view .LVU127
+ 403 0062 FFF7FEFF 		bl	validateChar
+ 404              	.LVL31:
+ 405              		.loc 1 140 15 view .LVU128
+ 406 0066 8246     		mov	r10, r0
+ 407              	.LVL32:
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 11
+
+
+ 141:Src/hex_parse.c ****     midhighnib = validateChar(dat->buff[index + 1]);
+ 408              		.loc 1 141 5 is_stmt 1 view .LVU129
+ 409              		.loc 1 141 18 is_stmt 0 view .LVU130
+ 410 0068 2879     		ldrb	r0, [r5, #4]	@ zero_extendqisi2
+ 411 006a FFF7FEFF 		bl	validateChar
+ 412              	.LVL33:
+ 413 006e 0746     		mov	r7, r0
+ 414              	.LVL34:
+ 142:Src/hex_parse.c ****     midlownib = validateChar(dat->buff[index + 2]);
+ 415              		.loc 1 142 5 is_stmt 1 view .LVU131
+ 416              		.loc 1 142 17 is_stmt 0 view .LVU132
+ 417 0070 6879     		ldrb	r0, [r5, #5]	@ zero_extendqisi2
+ 418 0072 FFF7FEFF 		bl	validateChar
+ 419              	.LVL35:
+ 420 0076 8146     		mov	r9, r0
+ 421              	.LVL36:
+ 143:Src/hex_parse.c ****     lownib = validateChar(dat->buff[index + 3]);
+ 422              		.loc 1 143 5 is_stmt 1 view .LVU133
+ 423              		.loc 1 143 14 is_stmt 0 view .LVU134
+ 424 0078 A879     		ldrb	r0, [r5, #6]	@ zero_extendqisi2
+ 425 007a FFF7FEFF 		bl	validateChar
+ 426              	.LVL37:
+ 144:Src/hex_parse.c ****     if ((lownib == -1) || (highnib == -1) || (midhighnib == -1) || (midlownib == -1))
+ 427              		.loc 1 144 5 is_stmt 1 view .LVU135
+ 145:Src/hex_parse.c ****     {
+ 146:Src/hex_parse.c ****         return -5;
+ 147:Src/hex_parse.c ****     }
+ 148:Src/hex_parse.c ****     address = (((uint16_t)highnib << 12) | ((uint16_t)midhighnib << 8)
+ 428              		.loc 1 148 5 view .LVU136
+ 429              		.loc 1 148 66 is_stmt 0 view .LVU137
+ 430 007e 3B02     		lsls	r3, r7, #8
+ 431              		.loc 1 148 42 view .LVU138
+ 432 0080 43EA0A33 		orr	r3, r3, r10, lsl #12
+ 433 0084 1BB2     		sxth	r3, r3
+ 149:Src/hex_parse.c ****                 | ((uint16_t)midlownib << 4) | ((uint16_t)lownib));
+ 434              		.loc 1 149 17 view .LVU139
+ 435 0086 43EA0913 		orr	r3, r3, r9, lsl #4
+ 436 008a 1BB2     		sxth	r3, r3
+ 437              		.loc 1 149 46 view .LVU140
+ 438 008c 1843     		orrs	r0, r0, r3
+ 439              	.LVL38:
+ 148:Src/hex_parse.c ****                 | ((uint16_t)midlownib << 4) | ((uint16_t)lownib));
+ 440              		.loc 1 148 13 view .LVU141
+ 441 008e 1FFA80FA 		uxth	r10, r0
+ 442              	.LVL39:
+ 150:Src/hex_parse.c ****     checksum += (uint8_t)(address >> 8);
+ 443              		.loc 1 150 5 is_stmt 1 view .LVU142
+ 444              		.loc 1 150 17 is_stmt 0 view .LVU143
+ 445 0092 C0F30727 		ubfx	r7, r0, #8, #8
+ 446              	.LVL40:
+ 447              		.loc 1 150 14 view .LVU144
+ 448 0096 4744     		add	r7, r7, r8
+ 449 0098 FBB2     		uxtb	r3, r7
+ 450              	.LVL41:
+ 151:Src/hex_parse.c ****     checksum += (uint8_t)address;
+ 451              		.loc 1 151 5 is_stmt 1 view .LVU145
+ 452              		.loc 1 151 17 is_stmt 0 view .LVU146
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 12
+
+
+ 453 009a C7B2     		uxtb	r7, r0
+ 454              		.loc 1 151 14 view .LVU147
+ 455 009c 1F44     		add	r7, r7, r3
+ 456 009e FFB2     		uxtb	r7, r7
+ 457              	.LVL42:
+ 152:Src/hex_parse.c ****     index += 4;
+ 458              		.loc 1 152 5 is_stmt 1 view .LVU148
+ 153:Src/hex_parse.c **** 
+ 154:Src/hex_parse.c ****     /* 2 byte type */
+ 155:Src/hex_parse.c ****     highnib = validateChar(dat->buff[index]);
+ 459              		.loc 1 155 5 view .LVU149
+ 460              		.loc 1 155 15 is_stmt 0 view .LVU150
+ 461 00a0 E879     		ldrb	r0, [r5, #7]	@ zero_extendqisi2
+ 462 00a2 FFF7FEFF 		bl	validateChar
+ 463              	.LVL43:
+ 464 00a6 8146     		mov	r9, r0
+ 465              	.LVL44:
+ 156:Src/hex_parse.c ****     lownib = validateChar(dat->buff[index + 1]);
+ 466              		.loc 1 156 5 is_stmt 1 view .LVU151
+ 467              		.loc 1 156 14 is_stmt 0 view .LVU152
+ 468 00a8 287A     		ldrb	r0, [r5, #8]	@ zero_extendqisi2
+ 469 00aa FFF7FEFF 		bl	validateChar
+ 470              	.LVL45:
+ 157:Src/hex_parse.c ****     if ((highnib == -1) || (lownib == -1))
+ 471              		.loc 1 157 5 is_stmt 1 view .LVU153
+ 158:Src/hex_parse.c ****     {
+ 159:Src/hex_parse.c ****         return -6;
+ 160:Src/hex_parse.c ****     }
+ 161:Src/hex_parse.c ****     type = (((uint8_t)highnib << 4) | (uint8_t)lownib);
+ 472              		.loc 1 161 5 view .LVU154
+ 473              		.loc 1 161 37 is_stmt 0 view .LVU155
+ 474 00ae 40EA0919 		orr	r9, r0, r9, lsl #4
+ 475              	.LVL46:
+ 476              		.loc 1 161 10 view .LVU156
+ 477 00b2 5FFA89F9 		uxtb	r9, r9
+ 478              	.LVL47:
+ 162:Src/hex_parse.c ****     checksum += type;
+ 479              		.loc 1 162 5 is_stmt 1 view .LVU157
+ 480              		.loc 1 162 14 is_stmt 0 view .LVU158
+ 481 00b6 4F44     		add	r7, r7, r9
+ 482              	.LVL48:
+ 483              		.loc 1 162 14 view .LVU159
+ 484 00b8 FFB2     		uxtb	r7, r7
+ 485              	.LVL49:
+ 163:Src/hex_parse.c ****     index += 2;
+ 486              		.loc 1 163 5 is_stmt 1 view .LVU160
+ 164:Src/hex_parse.c **** 
+ 165:Src/hex_parse.c ****     if (type == 0)
+ 487              		.loc 1 165 5 view .LVU161
+ 488              		.loc 1 165 8 is_stmt 0 view .LVU162
+ 489 00ba B9F1000F 		cmp	r9, #0
+ 490 00be 21D1     		bne	.L30
+ 166:Src/hex_parse.c ****     {
+ 167:Src/hex_parse.c ****         /* data record */
+ 168:Src/hex_parse.c ****         out->add = (uint8_t *)(Add_Addr + (uint32_t)address);
+ 491              		.loc 1 168 9 is_stmt 1 view .LVU163
+ 492              		.loc 1 168 41 is_stmt 0 view .LVU164
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 13
+
+
+ 493 00c0 7B4B     		ldr	r3, .L58
+ 494 00c2 1B68     		ldr	r3, [r3]
+ 495 00c4 5344     		add	r3, r3, r10
+ 496              		.loc 1 168 18 view .LVU165
+ 497 00c6 7363     		str	r3, [r6, #52]
+ 169:Src/hex_parse.c **** 
+ 170:Src/hex_parse.c ****         for (i = 0; i < out->length; i++)
+ 498              		.loc 1 170 9 is_stmt 1 view .LVU166
+ 499              	.LVL50:
+ 163:Src/hex_parse.c **** 
+ 500              		.loc 1 163 11 is_stmt 0 view .LVU167
+ 501 00c8 4FF0090A 		mov	r10, #9
+ 502              	.LVL51:
+ 503              	.L31:
+ 504              		.loc 1 170 21 is_stmt 1 discriminator 1 view .LVU168
+ 505              		.loc 1 170 9 is_stmt 0 discriminator 1 view .LVU169
+ 506 00cc C845     		cmp	r8, r9
+ 507 00ce 5BD9     		bls	.L33
+ 171:Src/hex_parse.c ****         {
+ 172:Src/hex_parse.c ****             highnib = validateChar(dat->buff[index]);
+ 508              		.loc 1 172 13 is_stmt 1 view .LVU170
+ 509              		.loc 1 172 23 is_stmt 0 view .LVU171
+ 510 00d0 15F80A00 		ldrb	r0, [r5, r10]	@ zero_extendqisi2
+ 511 00d4 FFF7FEFF 		bl	validateChar
+ 512              	.LVL52:
+ 513 00d8 8346     		mov	fp, r0
+ 514              	.LVL53:
+ 173:Src/hex_parse.c ****             lownib = validateChar(dat->buff[index + 1]);
+ 515              		.loc 1 173 13 is_stmt 1 view .LVU172
+ 516              		.loc 1 173 51 is_stmt 0 view .LVU173
+ 517 00da 0AF10103 		add	r3, r10, #1
+ 518              		.loc 1 173 22 view .LVU174
+ 519 00de E85C     		ldrb	r0, [r5, r3]	@ zero_extendqisi2
+ 520 00e0 FFF7FEFF 		bl	validateChar
+ 521              	.LVL54:
+ 174:Src/hex_parse.c ****             if ((highnib == -1) || (lownib == -1))
+ 522              		.loc 1 174 13 is_stmt 1 view .LVU175
+ 175:Src/hex_parse.c ****             {
+ 176:Src/hex_parse.c ****                 return -7;
+ 177:Src/hex_parse.c ****             }
+ 178:Src/hex_parse.c ****             out->buff[i] = (((uint8_t)highnib << 4) | (uint8_t)lownib);
+ 523              		.loc 1 178 13 view .LVU176
+ 524              		.loc 1 178 53 is_stmt 0 view .LVU177
+ 525 00e4 40EA0B10 		orr	r0, r0, fp, lsl #4
+ 526              	.LVL55:
+ 527              		.loc 1 178 53 view .LVU178
+ 528 00e8 C0B2     		uxtb	r0, r0
+ 529              		.loc 1 178 26 view .LVU179
+ 530 00ea 06F80900 		strb	r0, [r6, r9]
+ 179:Src/hex_parse.c ****             checksum += out->buff[i];
+ 531              		.loc 1 179 13 is_stmt 1 view .LVU180
+ 532              		.loc 1 179 22 is_stmt 0 view .LVU181
+ 533 00ee 0744     		add	r7, r7, r0
+ 534              	.LVL56:
+ 535              		.loc 1 179 22 view .LVU182
+ 536 00f0 FFB2     		uxtb	r7, r7
+ 537              	.LVL57:
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 14
+
+
+ 180:Src/hex_parse.c ****             index += 2;
+ 538              		.loc 1 180 13 is_stmt 1 view .LVU183
+ 539              		.loc 1 180 19 is_stmt 0 view .LVU184
+ 540 00f2 0AF1020A 		add	r10, r10, #2
+ 541              	.LVL58:
+ 542              		.loc 1 180 19 view .LVU185
+ 543 00f6 5FFA8AFA 		uxtb	r10, r10
+ 544              	.LVL59:
+ 170:Src/hex_parse.c ****         {
+ 545              		.loc 1 170 38 is_stmt 1 view .LVU186
+ 170:Src/hex_parse.c ****         {
+ 546              		.loc 1 170 39 is_stmt 0 view .LVU187
+ 547 00fa 09F10109 		add	r9, r9, #1
+ 548              	.LVL60:
+ 170:Src/hex_parse.c ****         {
+ 549              		.loc 1 170 39 view .LVU188
+ 550 00fe 5FFA89F9 		uxtb	r9, r9
+ 551              	.LVL61:
+ 170:Src/hex_parse.c ****         {
+ 552              		.loc 1 170 39 view .LVU189
+ 553 0102 E3E7     		b	.L31
+ 554              	.LVL62:
+ 555              	.L30:
+ 181:Src/hex_parse.c ****         }
+ 182:Src/hex_parse.c ****     }
+ 183:Src/hex_parse.c ****     else if (type == 1)
+ 556              		.loc 1 183 10 is_stmt 1 view .LVU190
+ 557              		.loc 1 183 13 is_stmt 0 view .LVU191
+ 558 0104 B9F1010F 		cmp	r9, #1
+ 559 0108 32D0     		beq	.L54
+ 184:Src/hex_parse.c ****     {
+ 185:Src/hex_parse.c ****         /* end of record */
+ 186:Src/hex_parse.c ****         if (out->length != 0 && address != 0)
+ 187:Src/hex_parse.c ****         {
+ 188:Src/hex_parse.c ****             return -8;
+ 189:Src/hex_parse.c ****         }
+ 190:Src/hex_parse.c ****         Hex_state = HEX_DONE;
+ 191:Src/hex_parse.c ****     }
+ 192:Src/hex_parse.c ****     else if (type == 2)
+ 560              		.loc 1 192 10 is_stmt 1 view .LVU192
+ 561              		.loc 1 192 13 is_stmt 0 view .LVU193
+ 562 010a B9F1020F 		cmp	r9, #2
+ 563 010e 4FD0     		beq	.L55
+ 193:Src/hex_parse.c ****     {
+ 194:Src/hex_parse.c ****         /* extended segment address record */
+ 195:Src/hex_parse.c ****         if (out->length != 2 || address != 0)
+ 196:Src/hex_parse.c ****         {
+ 197:Src/hex_parse.c ****             return -9;
+ 198:Src/hex_parse.c ****         }
+ 199:Src/hex_parse.c ****         /* 4 byte address */
+ 200:Src/hex_parse.c ****         highnib = validateChar(dat->buff[index]);
+ 201:Src/hex_parse.c ****         midhighnib = validateChar(dat->buff[index + 1]);
+ 202:Src/hex_parse.c ****         midlownib = validateChar(dat->buff[index + 2]);
+ 203:Src/hex_parse.c ****         lownib = validateChar(dat->buff[index + 3]);
+ 204:Src/hex_parse.c ****         if ((lownib == -1) || (highnib == -1) || (midhighnib == -1) || (midlownib == -1))
+ 205:Src/hex_parse.c ****         {
+ 206:Src/hex_parse.c ****             return -10;
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 15
+
+
+ 207:Src/hex_parse.c ****         }
+ 208:Src/hex_parse.c ****         Add_Addr = (((uint32_t)highnib << 16) | ((uint32_t)midhighnib << 12)
+ 209:Src/hex_parse.c ****                 | ((uint32_t)midlownib << 8) | ((uint32_t)lownib << 4));
+ 210:Src/hex_parse.c ****         checksum += (((uint8_t)highnib << 4) | (uint8_t)midhighnib);
+ 211:Src/hex_parse.c ****         checksum += (((uint8_t)midlownib << 4) | (uint8_t)lownib);
+ 212:Src/hex_parse.c ****         index += 4;
+ 213:Src/hex_parse.c **** 
+ 214:Src/hex_parse.c ****         out->length = 0;
+ 215:Src/hex_parse.c ****     }
+ 216:Src/hex_parse.c ****     else if (type == 4)
+ 564              		.loc 1 216 10 is_stmt 1 view .LVU194
+ 565              		.loc 1 216 13 is_stmt 0 view .LVU195
+ 566 0110 B9F1040F 		cmp	r9, #4
+ 567 0114 7BD0     		beq	.L56
+ 217:Src/hex_parse.c ****     {
+ 218:Src/hex_parse.c ****         /* extended linear address record */
+ 219:Src/hex_parse.c ****         if (out->length != 2 || address != 0)
+ 220:Src/hex_parse.c ****         {
+ 221:Src/hex_parse.c ****             return -11;
+ 222:Src/hex_parse.c ****         }
+ 223:Src/hex_parse.c ****         /* 4 byte address */
+ 224:Src/hex_parse.c ****         highnib = validateChar(dat->buff[index]);
+ 225:Src/hex_parse.c ****         midhighnib = validateChar(dat->buff[index + 1]);
+ 226:Src/hex_parse.c ****         midlownib = validateChar(dat->buff[index + 2]);
+ 227:Src/hex_parse.c ****         lownib = validateChar(dat->buff[index + 3]);
+ 228:Src/hex_parse.c ****         if ((lownib == -1) || (highnib == -1) || (midhighnib == -1) || (midlownib == -1))
+ 229:Src/hex_parse.c ****         {
+ 230:Src/hex_parse.c ****             return -12;
+ 231:Src/hex_parse.c ****         }
+ 232:Src/hex_parse.c ****         Add_Addr = (((uint32_t)highnib << 28) | ((uint32_t)midhighnib << 24)
+ 233:Src/hex_parse.c ****                 | ((uint32_t)midlownib << 20) | ((uint32_t)lownib << 16));
+ 234:Src/hex_parse.c ****         checksum += (((uint8_t)highnib << 4) | (uint8_t)midhighnib);
+ 235:Src/hex_parse.c ****         checksum += (((uint8_t)midlownib << 4) | (uint8_t)lownib);
+ 236:Src/hex_parse.c ****         index += 4;
+ 237:Src/hex_parse.c **** 
+ 238:Src/hex_parse.c ****         out->length = 0;
+ 239:Src/hex_parse.c ****     }
+ 240:Src/hex_parse.c ****     else if (type == 5)
+ 568              		.loc 1 240 10 is_stmt 1 view .LVU196
+ 569              		.loc 1 240 13 is_stmt 0 view .LVU197
+ 570 0116 B9F1050F 		cmp	r9, #5
+ 571 011a 40F0C280 		bne	.L49
+ 241:Src/hex_parse.c ****     {
+ 242:Src/hex_parse.c ****         /* start address of reset handler */
+ 243:Src/hex_parse.c ****         if (out->length != 4 || address != 0)
+ 572              		.loc 1 243 9 is_stmt 1 view .LVU198
+ 573              		.loc 1 243 12 is_stmt 0 view .LVU199
+ 574 011e B8F1040F 		cmp	r8, #4
+ 575 0122 40F0C080 		bne	.L50
+ 576              		.loc 1 243 30 discriminator 1 view .LVU200
+ 577 0126 BAF1000F 		cmp	r10, #0
+ 578 012a 40F0BE80 		bne	.L51
+ 244:Src/hex_parse.c ****         {
+ 245:Src/hex_parse.c ****             return -13;
+ 246:Src/hex_parse.c ****         }
+ 247:Src/hex_parse.c **** 
+ 248:Src/hex_parse.c ****         /* 8 Byte address */
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 16
+
+
+ 249:Src/hex_parse.c ****         for (i = 0; i < out->length; i++)
+ 579              		.loc 1 249 16 view .LVU201
+ 580 012e A146     		mov	r9, r4
+ 581              	.LVL63:
+ 163:Src/hex_parse.c **** 
+ 582              		.loc 1 163 11 view .LVU202
+ 583 0130 4FF0090A 		mov	r10, #9
+ 584              	.LVL64:
+ 585              	.L38:
+ 586              		.loc 1 249 21 is_stmt 1 discriminator 1 view .LVU203
+ 587              		.loc 1 249 9 is_stmt 0 discriminator 1 view .LVU204
+ 588 0134 C845     		cmp	r8, r9
+ 589 0136 40F29980 		bls	.L57
+ 250:Src/hex_parse.c ****         {
+ 251:Src/hex_parse.c ****             highnib = validateChar(dat->buff[index]);
+ 590              		.loc 1 251 13 is_stmt 1 view .LVU205
+ 591              		.loc 1 251 23 is_stmt 0 view .LVU206
+ 592 013a 15F80A00 		ldrb	r0, [r5, r10]	@ zero_extendqisi2
+ 593              	.LVL65:
+ 594              		.loc 1 251 23 view .LVU207
+ 595 013e FFF7FEFF 		bl	validateChar
+ 596              	.LVL66:
+ 597 0142 8346     		mov	fp, r0
+ 598              	.LVL67:
+ 252:Src/hex_parse.c ****             lownib = validateChar(dat->buff[index + 1]);
+ 599              		.loc 1 252 13 is_stmt 1 view .LVU208
+ 600              		.loc 1 252 51 is_stmt 0 view .LVU209
+ 601 0144 0AF10103 		add	r3, r10, #1
+ 602              		.loc 1 252 22 view .LVU210
+ 603 0148 E85C     		ldrb	r0, [r5, r3]	@ zero_extendqisi2
+ 604 014a FFF7FEFF 		bl	validateChar
+ 605              	.LVL68:
+ 253:Src/hex_parse.c ****             if ((highnib == -1) || (lownib == -1))
+ 606              		.loc 1 253 13 is_stmt 1 view .LVU211
+ 254:Src/hex_parse.c ****             {
+ 255:Src/hex_parse.c ****                 return -14;
+ 256:Src/hex_parse.c ****             }
+ 257:Src/hex_parse.c ****             out->buff[3 - i] = (((uint8_t)highnib << 4) | (uint8_t)lownib);     /* change to low by
+ 607              		.loc 1 257 13 view .LVU212
+ 608              		.loc 1 257 25 is_stmt 0 view .LVU213
+ 609 014e C9F10302 		rsb	r2, r9, #3
+ 610              		.loc 1 257 57 view .LVU214
+ 611 0152 40EA0B13 		orr	r3, r0, fp, lsl #4
+ 612 0156 DBB2     		uxtb	r3, r3
+ 613              		.loc 1 257 30 view .LVU215
+ 614 0158 B354     		strb	r3, [r6, r2]
+ 258:Src/hex_parse.c ****             checksum += out->buff[3 - i];
+ 615              		.loc 1 258 13 is_stmt 1 view .LVU216
+ 616              		.loc 1 258 22 is_stmt 0 view .LVU217
+ 617 015a 1F44     		add	r7, r7, r3
+ 618              	.LVL69:
+ 619              		.loc 1 258 22 view .LVU218
+ 620 015c FFB2     		uxtb	r7, r7
+ 621              	.LVL70:
+ 259:Src/hex_parse.c ****             index += 2;
+ 622              		.loc 1 259 13 is_stmt 1 view .LVU219
+ 623              		.loc 1 259 19 is_stmt 0 view .LVU220
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 17
+
+
+ 624 015e 0AF1020A 		add	r10, r10, #2
+ 625              	.LVL71:
+ 626              		.loc 1 259 19 view .LVU221
+ 627 0162 5FFA8AFA 		uxtb	r10, r10
+ 628              	.LVL72:
+ 249:Src/hex_parse.c ****         {
+ 629              		.loc 1 249 38 is_stmt 1 view .LVU222
+ 249:Src/hex_parse.c ****         {
+ 630              		.loc 1 249 39 is_stmt 0 view .LVU223
+ 631 0166 09F10109 		add	r9, r9, #1
+ 632              	.LVL73:
+ 249:Src/hex_parse.c ****         {
+ 633              		.loc 1 249 39 view .LVU224
+ 634 016a 5FFA89F9 		uxtb	r9, r9
+ 635              	.LVL74:
+ 249:Src/hex_parse.c ****         {
+ 636              		.loc 1 249 39 view .LVU225
+ 637 016e E1E7     		b	.L38
+ 638              	.LVL75:
+ 639              	.L54:
+ 186:Src/hex_parse.c ****         {
+ 640              		.loc 1 186 9 is_stmt 1 view .LVU226
+ 186:Src/hex_parse.c ****         {
+ 641              		.loc 1 186 12 is_stmt 0 view .LVU227
+ 642 0170 B8F1000F 		cmp	r8, #0
+ 643 0174 03D0     		beq	.L35
+ 186:Src/hex_parse.c ****         {
+ 644              		.loc 1 186 30 discriminator 1 view .LVU228
+ 645 0176 BAF1000F 		cmp	r10, #0
+ 646 017a 40F08880 		bne	.L44
+ 647              	.L35:
+ 190:Src/hex_parse.c ****     }
+ 648              		.loc 1 190 9 is_stmt 1 view .LVU229
+ 190:Src/hex_parse.c ****     }
+ 649              		.loc 1 190 19 is_stmt 0 view .LVU230
+ 650 017e 4D4B     		ldr	r3, .L58+4
+ 651 0180 0222     		movs	r2, #2
+ 652 0182 1A70     		strb	r2, [r3]
+ 163:Src/hex_parse.c **** 
+ 653              		.loc 1 163 11 view .LVU231
+ 654 0184 4FF0090A 		mov	r10, #9
+ 655              	.LVL76:
+ 656              	.L33:
+ 260:Src/hex_parse.c ****         }
+ 261:Src/hex_parse.c ****         ResetHandler_Addr = *((uint32_t *)&out->buff[0]);       /* low byte first parse */
+ 262:Src/hex_parse.c **** 
+ 263:Src/hex_parse.c ****         out->length = 0;
+ 264:Src/hex_parse.c ****     }
+ 265:Src/hex_parse.c ****     else
+ 266:Src/hex_parse.c ****     {
+ 267:Src/hex_parse.c ****         /* invalid type */
+ 268:Src/hex_parse.c ****         return -15;
+ 269:Src/hex_parse.c ****     }
+ 270:Src/hex_parse.c **** 
+ 271:Src/hex_parse.c ****     /* Two byte checksum */
+ 272:Src/hex_parse.c ****     highnib = validateChar(dat->buff[index]);
+ 657              		.loc 1 272 5 is_stmt 1 view .LVU232
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 18
+
+
+ 658              		.loc 1 272 15 is_stmt 0 view .LVU233
+ 659 0188 15F80A00 		ldrb	r0, [r5, r10]	@ zero_extendqisi2
+ 660 018c FFF7FEFF 		bl	validateChar
+ 661              	.LVL77:
+ 662 0190 0646     		mov	r6, r0
+ 663              	.LVL78:
+ 273:Src/hex_parse.c ****     lownib = validateChar(dat->buff[index + 1]);
+ 664              		.loc 1 273 5 is_stmt 1 view .LVU234
+ 665              		.loc 1 273 43 is_stmt 0 view .LVU235
+ 666 0192 0AF1010A 		add	r10, r10, #1
+ 667              	.LVL79:
+ 668              		.loc 1 273 14 view .LVU236
+ 669 0196 15F80A00 		ldrb	r0, [r5, r10]	@ zero_extendqisi2
+ 670 019a FFF7FEFF 		bl	validateChar
+ 671              	.LVL80:
+ 274:Src/hex_parse.c ****     if ((highnib == -1) || (lownib == -1))
+ 672              		.loc 1 274 5 is_stmt 1 view .LVU237
+ 275:Src/hex_parse.c ****     {
+ 276:Src/hex_parse.c ****         return -16;
+ 277:Src/hex_parse.c ****     }
+ 278:Src/hex_parse.c ****     compchecksum = (((uint8_t)highnib << 4) | (uint8_t)lownib);
+ 673              		.loc 1 278 5 view .LVU238
+ 674              		.loc 1 278 45 is_stmt 0 view .LVU239
+ 675 019e 40EA0613 		orr	r3, r0, r6, lsl #4
+ 676              		.loc 1 278 18 view .LVU240
+ 677 01a2 DBB2     		uxtb	r3, r3
+ 678              	.LVL81:
+ 279:Src/hex_parse.c ****     checksum = (~checksum) + 1;
+ 679              		.loc 1 279 5 is_stmt 1 view .LVU241
+ 680              		.loc 1 279 14 is_stmt 0 view .LVU242
+ 681 01a4 7F42     		rsbs	r7, r7, #0
+ 682              	.LVL82:
+ 683              		.loc 1 279 14 view .LVU243
+ 684 01a6 FFB2     		uxtb	r7, r7
+ 685              	.LVL83:
+ 280:Src/hex_parse.c ****     if (checksum != compchecksum)
+ 686              		.loc 1 280 5 is_stmt 1 view .LVU244
+ 687              		.loc 1 280 8 is_stmt 0 view .LVU245
+ 688 01a8 BB42     		cmp	r3, r7
+ 689 01aa 69D0     		beq	.L29
+ 281:Src/hex_parse.c ****     {
+ 282:Src/hex_parse.c ****         return -17;
+ 690              		.loc 1 282 16 view .LVU246
+ 691 01ac EF24     		movs	r4, #239
+ 692 01ae 67E0     		b	.L29
+ 693              	.LVL84:
+ 694              	.L55:
+ 195:Src/hex_parse.c ****         {
+ 695              		.loc 1 195 9 is_stmt 1 view .LVU247
+ 195:Src/hex_parse.c ****         {
+ 696              		.loc 1 195 12 is_stmt 0 view .LVU248
+ 697 01b0 B8F1020F 		cmp	r8, #2
+ 698 01b4 6DD1     		bne	.L45
+ 195:Src/hex_parse.c ****         {
+ 699              		.loc 1 195 30 discriminator 1 view .LVU249
+ 700 01b6 BAF1000F 		cmp	r10, #0
+ 701 01ba 6CD1     		bne	.L46
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 19
+
+
+ 200:Src/hex_parse.c ****         midhighnib = validateChar(dat->buff[index + 1]);
+ 702              		.loc 1 200 9 is_stmt 1 view .LVU250
+ 200:Src/hex_parse.c ****         midhighnib = validateChar(dat->buff[index + 1]);
+ 703              		.loc 1 200 19 is_stmt 0 view .LVU251
+ 704 01bc 687A     		ldrb	r0, [r5, #9]	@ zero_extendqisi2
+ 705              	.LVL85:
+ 200:Src/hex_parse.c ****         midhighnib = validateChar(dat->buff[index + 1]);
+ 706              		.loc 1 200 19 view .LVU252
+ 707 01be FFF7FEFF 		bl	validateChar
+ 708              	.LVL86:
+ 709 01c2 8246     		mov	r10, r0
+ 710              	.LVL87:
+ 201:Src/hex_parse.c ****         midlownib = validateChar(dat->buff[index + 2]);
+ 711              		.loc 1 201 9 is_stmt 1 view .LVU253
+ 201:Src/hex_parse.c ****         midlownib = validateChar(dat->buff[index + 2]);
+ 712              		.loc 1 201 22 is_stmt 0 view .LVU254
+ 713 01c4 A87A     		ldrb	r0, [r5, #10]	@ zero_extendqisi2
+ 714 01c6 FFF7FEFF 		bl	validateChar
+ 715              	.LVL88:
+ 716 01ca 8046     		mov	r8, r0
+ 717              	.LVL89:
+ 202:Src/hex_parse.c ****         lownib = validateChar(dat->buff[index + 3]);
+ 718              		.loc 1 202 9 is_stmt 1 view .LVU255
+ 202:Src/hex_parse.c ****         lownib = validateChar(dat->buff[index + 3]);
+ 719              		.loc 1 202 21 is_stmt 0 view .LVU256
+ 720 01cc E87A     		ldrb	r0, [r5, #11]	@ zero_extendqisi2
+ 721 01ce FFF7FEFF 		bl	validateChar
+ 722              	.LVL90:
+ 723 01d2 8146     		mov	r9, r0
+ 724              	.LVL91:
+ 203:Src/hex_parse.c ****         if ((lownib == -1) || (highnib == -1) || (midhighnib == -1) || (midlownib == -1))
+ 725              		.loc 1 203 9 is_stmt 1 view .LVU257
+ 203:Src/hex_parse.c ****         if ((lownib == -1) || (highnib == -1) || (midhighnib == -1) || (midlownib == -1))
+ 726              		.loc 1 203 18 is_stmt 0 view .LVU258
+ 727 01d4 287B     		ldrb	r0, [r5, #12]	@ zero_extendqisi2
+ 728 01d6 FFF7FEFF 		bl	validateChar
+ 729              	.LVL92:
+ 204:Src/hex_parse.c ****         {
+ 730              		.loc 1 204 9 is_stmt 1 view .LVU259
+ 208:Src/hex_parse.c ****                 | ((uint32_t)midlownib << 8) | ((uint32_t)lownib << 4));
+ 731              		.loc 1 208 9 view .LVU260
+ 208:Src/hex_parse.c ****                 | ((uint32_t)midlownib << 8) | ((uint32_t)lownib << 4));
+ 732              		.loc 1 208 71 is_stmt 0 view .LVU261
+ 733 01da 4FEA0832 		lsl	r2, r8, #12
+ 208:Src/hex_parse.c ****                 | ((uint32_t)midlownib << 8) | ((uint32_t)lownib << 4));
+ 734              		.loc 1 208 47 view .LVU262
+ 735 01de 42EA0A42 		orr	r2, r2, r10, lsl #16
+ 209:Src/hex_parse.c ****         checksum += (((uint8_t)highnib << 4) | (uint8_t)midhighnib);
+ 736              		.loc 1 209 17 view .LVU263
+ 737 01e2 42EA0922 		orr	r2, r2, r9, lsl #8
+ 209:Src/hex_parse.c ****         checksum += (((uint8_t)highnib << 4) | (uint8_t)midhighnib);
+ 738              		.loc 1 209 46 view .LVU264
+ 739 01e6 42EA0012 		orr	r2, r2, r0, lsl #4
+ 208:Src/hex_parse.c ****                 | ((uint32_t)midlownib << 8) | ((uint32_t)lownib << 4));
+ 740              		.loc 1 208 18 view .LVU265
+ 741 01ea 3149     		ldr	r1, .L58
+ 742 01ec 0A60     		str	r2, [r1]
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 20
+
+
+ 210:Src/hex_parse.c ****         checksum += (((uint8_t)midlownib << 4) | (uint8_t)lownib);
+ 743              		.loc 1 210 9 is_stmt 1 view .LVU266
+ 210:Src/hex_parse.c ****         checksum += (((uint8_t)midlownib << 4) | (uint8_t)lownib);
+ 744              		.loc 1 210 46 is_stmt 0 view .LVU267
+ 745 01ee 48EA0A12 		orr	r2, r8, r10, lsl #4
+ 746 01f2 D2B2     		uxtb	r2, r2
+ 210:Src/hex_parse.c ****         checksum += (((uint8_t)midlownib << 4) | (uint8_t)lownib);
+ 747              		.loc 1 210 18 view .LVU268
+ 748 01f4 3A44     		add	r2, r2, r7
+ 749 01f6 D2B2     		uxtb	r2, r2
+ 750              	.LVL93:
+ 211:Src/hex_parse.c ****         index += 4;
+ 751              		.loc 1 211 9 is_stmt 1 view .LVU269
+ 211:Src/hex_parse.c ****         index += 4;
+ 752              		.loc 1 211 48 is_stmt 0 view .LVU270
+ 753 01f8 40EA0913 		orr	r3, r0, r9, lsl #4
+ 754 01fc DFB2     		uxtb	r7, r3
+ 211:Src/hex_parse.c ****         index += 4;
+ 755              		.loc 1 211 18 view .LVU271
+ 756 01fe 3A44     		add	r2, r2, r7
+ 757              	.LVL94:
+ 211:Src/hex_parse.c ****         index += 4;
+ 758              		.loc 1 211 18 view .LVU272
+ 759 0200 D7B2     		uxtb	r7, r2
+ 760              	.LVL95:
+ 212:Src/hex_parse.c **** 
+ 761              		.loc 1 212 9 is_stmt 1 view .LVU273
+ 214:Src/hex_parse.c ****     }
+ 762              		.loc 1 214 9 view .LVU274
+ 214:Src/hex_parse.c ****     }
+ 763              		.loc 1 214 21 is_stmt 0 view .LVU275
+ 764 0202 0023     		movs	r3, #0
+ 765 0204 86F83230 		strb	r3, [r6, #50]
+ 212:Src/hex_parse.c **** 
+ 766              		.loc 1 212 15 view .LVU276
+ 767 0208 4FF00D0A 		mov	r10, #13
+ 768              	.LVL96:
+ 212:Src/hex_parse.c **** 
+ 769              		.loc 1 212 15 view .LVU277
+ 770 020c BCE7     		b	.L33
+ 771              	.LVL97:
+ 772              	.L56:
+ 219:Src/hex_parse.c ****         {
+ 773              		.loc 1 219 9 is_stmt 1 view .LVU278
+ 219:Src/hex_parse.c ****         {
+ 774              		.loc 1 219 12 is_stmt 0 view .LVU279
+ 775 020e B8F1020F 		cmp	r8, #2
+ 776 0212 42D1     		bne	.L47
+ 219:Src/hex_parse.c ****         {
+ 777              		.loc 1 219 30 discriminator 1 view .LVU280
+ 778 0214 BAF1000F 		cmp	r10, #0
+ 779 0218 41D1     		bne	.L48
+ 224:Src/hex_parse.c ****         midhighnib = validateChar(dat->buff[index + 1]);
+ 780              		.loc 1 224 9 is_stmt 1 view .LVU281
+ 224:Src/hex_parse.c ****         midhighnib = validateChar(dat->buff[index + 1]);
+ 781              		.loc 1 224 19 is_stmt 0 view .LVU282
+ 782 021a 687A     		ldrb	r0, [r5, #9]	@ zero_extendqisi2
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 21
+
+
+ 783              	.LVL98:
+ 224:Src/hex_parse.c ****         midhighnib = validateChar(dat->buff[index + 1]);
+ 784              		.loc 1 224 19 view .LVU283
+ 785 021c FFF7FEFF 		bl	validateChar
+ 786              	.LVL99:
+ 787 0220 8246     		mov	r10, r0
+ 788              	.LVL100:
+ 225:Src/hex_parse.c ****         midlownib = validateChar(dat->buff[index + 2]);
+ 789              		.loc 1 225 9 is_stmt 1 view .LVU284
+ 225:Src/hex_parse.c ****         midlownib = validateChar(dat->buff[index + 2]);
+ 790              		.loc 1 225 22 is_stmt 0 view .LVU285
+ 791 0222 A87A     		ldrb	r0, [r5, #10]	@ zero_extendqisi2
+ 792 0224 FFF7FEFF 		bl	validateChar
+ 793              	.LVL101:
+ 794 0228 8046     		mov	r8, r0
+ 795              	.LVL102:
+ 226:Src/hex_parse.c ****         lownib = validateChar(dat->buff[index + 3]);
+ 796              		.loc 1 226 9 is_stmt 1 view .LVU286
+ 226:Src/hex_parse.c ****         lownib = validateChar(dat->buff[index + 3]);
+ 797              		.loc 1 226 21 is_stmt 0 view .LVU287
+ 798 022a E87A     		ldrb	r0, [r5, #11]	@ zero_extendqisi2
+ 799 022c FFF7FEFF 		bl	validateChar
+ 800              	.LVL103:
+ 801 0230 8146     		mov	r9, r0
+ 802              	.LVL104:
+ 227:Src/hex_parse.c ****         if ((lownib == -1) || (highnib == -1) || (midhighnib == -1) || (midlownib == -1))
+ 803              		.loc 1 227 9 is_stmt 1 view .LVU288
+ 227:Src/hex_parse.c ****         if ((lownib == -1) || (highnib == -1) || (midhighnib == -1) || (midlownib == -1))
+ 804              		.loc 1 227 18 is_stmt 0 view .LVU289
+ 805 0232 287B     		ldrb	r0, [r5, #12]	@ zero_extendqisi2
+ 806 0234 FFF7FEFF 		bl	validateChar
+ 807              	.LVL105:
+ 228:Src/hex_parse.c ****         {
+ 808              		.loc 1 228 9 is_stmt 1 view .LVU290
+ 232:Src/hex_parse.c ****                 | ((uint32_t)midlownib << 20) | ((uint32_t)lownib << 16));
+ 809              		.loc 1 232 9 view .LVU291
+ 232:Src/hex_parse.c ****                 | ((uint32_t)midlownib << 20) | ((uint32_t)lownib << 16));
+ 810              		.loc 1 232 71 is_stmt 0 view .LVU292
+ 811 0238 4FEA0863 		lsl	r3, r8, #24
+ 232:Src/hex_parse.c ****                 | ((uint32_t)midlownib << 20) | ((uint32_t)lownib << 16));
+ 812              		.loc 1 232 47 view .LVU293
+ 813 023c 43EA0A73 		orr	r3, r3, r10, lsl #28
+ 233:Src/hex_parse.c ****         checksum += (((uint8_t)highnib << 4) | (uint8_t)midhighnib);
+ 814              		.loc 1 233 17 view .LVU294
+ 815 0240 43EA0953 		orr	r3, r3, r9, lsl #20
+ 233:Src/hex_parse.c ****         checksum += (((uint8_t)highnib << 4) | (uint8_t)midhighnib);
+ 816              		.loc 1 233 47 view .LVU295
+ 817 0244 43EA0043 		orr	r3, r3, r0, lsl #16
+ 232:Src/hex_parse.c ****                 | ((uint32_t)midlownib << 20) | ((uint32_t)lownib << 16));
+ 818              		.loc 1 232 18 view .LVU296
+ 819 0248 1949     		ldr	r1, .L58
+ 820 024a 0B60     		str	r3, [r1]
+ 234:Src/hex_parse.c ****         checksum += (((uint8_t)midlownib << 4) | (uint8_t)lownib);
+ 821              		.loc 1 234 9 is_stmt 1 view .LVU297
+ 234:Src/hex_parse.c ****         checksum += (((uint8_t)midlownib << 4) | (uint8_t)lownib);
+ 822              		.loc 1 234 46 is_stmt 0 view .LVU298
+ 823 024c 48EA0A13 		orr	r3, r8, r10, lsl #4
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 22
+
+
+ 824 0250 DBB2     		uxtb	r3, r3
+ 234:Src/hex_parse.c ****         checksum += (((uint8_t)midlownib << 4) | (uint8_t)lownib);
+ 825              		.loc 1 234 18 view .LVU299
+ 826 0252 3B44     		add	r3, r3, r7
+ 827 0254 DBB2     		uxtb	r3, r3
+ 828              	.LVL106:
+ 235:Src/hex_parse.c ****         index += 4;
+ 829              		.loc 1 235 9 is_stmt 1 view .LVU300
+ 235:Src/hex_parse.c ****         index += 4;
+ 830              		.loc 1 235 48 is_stmt 0 view .LVU301
+ 831 0256 40EA0912 		orr	r2, r0, r9, lsl #4
+ 832 025a D7B2     		uxtb	r7, r2
+ 235:Src/hex_parse.c ****         index += 4;
+ 833              		.loc 1 235 18 view .LVU302
+ 834 025c 3B44     		add	r3, r3, r7
+ 835              	.LVL107:
+ 235:Src/hex_parse.c ****         index += 4;
+ 836              		.loc 1 235 18 view .LVU303
+ 837 025e DFB2     		uxtb	r7, r3
+ 838              	.LVL108:
+ 236:Src/hex_parse.c **** 
+ 839              		.loc 1 236 9 is_stmt 1 view .LVU304
+ 238:Src/hex_parse.c ****     }
+ 840              		.loc 1 238 9 view .LVU305
+ 238:Src/hex_parse.c ****     }
+ 841              		.loc 1 238 21 is_stmt 0 view .LVU306
+ 842 0260 0023     		movs	r3, #0
+ 843 0262 86F83230 		strb	r3, [r6, #50]
+ 236:Src/hex_parse.c **** 
+ 844              		.loc 1 236 15 view .LVU307
+ 845 0266 4FF00D0A 		mov	r10, #13
+ 846              	.LVL109:
+ 236:Src/hex_parse.c **** 
+ 847              		.loc 1 236 15 view .LVU308
+ 848 026a 8DE7     		b	.L33
+ 849              	.LVL110:
+ 850              	.L57:
+ 261:Src/hex_parse.c **** 
+ 851              		.loc 1 261 9 is_stmt 1 view .LVU309
+ 261:Src/hex_parse.c **** 
+ 852              		.loc 1 261 29 is_stmt 0 view .LVU310
+ 853 026c 3268     		ldr	r2, [r6]
+ 261:Src/hex_parse.c **** 
+ 854              		.loc 1 261 27 view .LVU311
+ 855 026e 124B     		ldr	r3, .L58+8
+ 856 0270 1A60     		str	r2, [r3]
+ 263:Src/hex_parse.c ****     }
+ 857              		.loc 1 263 9 is_stmt 1 view .LVU312
+ 263:Src/hex_parse.c ****     }
+ 858              		.loc 1 263 21 is_stmt 0 view .LVU313
+ 859 0272 0023     		movs	r3, #0
+ 860 0274 86F83230 		strb	r3, [r6, #50]
+ 861 0278 86E7     		b	.L33
+ 862              	.LVL111:
+ 863              	.L40:
+ 113:Src/hex_parse.c ****     }
+ 864              		.loc 1 113 16 view .LVU314
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 23
+
+
+ 865 027a FF24     		movs	r4, #255
+ 866              	.LVL112:
+ 113:Src/hex_parse.c ****     }
+ 867              		.loc 1 113 16 view .LVU315
+ 868 027c 00E0     		b	.L29
+ 869              	.LVL113:
+ 870              	.L41:
+ 119:Src/hex_parse.c ****     }
+ 871              		.loc 1 119 16 view .LVU316
+ 872 027e FE24     		movs	r4, #254
+ 873              	.LVL114:
+ 874              	.L29:
+ 283:Src/hex_parse.c ****     }
+ 284:Src/hex_parse.c **** 
+ 285:Src/hex_parse.c ****     return 0;
+ 286:Src/hex_parse.c **** }
+ 875              		.loc 1 286 1 view .LVU317
+ 876 0280 2046     		mov	r0, r4
+ 877 0282 BDE8F88F 		pop	{r3, r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 878              	.LVL115:
+ 879              	.L42:
+ 134:Src/hex_parse.c ****     }
+ 880              		.loc 1 134 16 view .LVU318
+ 881 0286 FC24     		movs	r4, #252
+ 882 0288 FAE7     		b	.L29
+ 883              	.L43:
+ 884 028a FC24     		movs	r4, #252
+ 885 028c F8E7     		b	.L29
+ 886              	.LVL116:
+ 887              	.L44:
+ 188:Src/hex_parse.c ****         }
+ 888              		.loc 1 188 20 view .LVU319
+ 889 028e F824     		movs	r4, #248
+ 890 0290 F6E7     		b	.L29
+ 891              	.L45:
+ 197:Src/hex_parse.c ****         }
+ 892              		.loc 1 197 20 view .LVU320
+ 893 0292 F724     		movs	r4, #247
+ 894 0294 F4E7     		b	.L29
+ 895              	.L46:
+ 896 0296 F724     		movs	r4, #247
+ 897 0298 F2E7     		b	.L29
+ 898              	.L47:
+ 221:Src/hex_parse.c ****         }
+ 899              		.loc 1 221 20 view .LVU321
+ 900 029a F524     		movs	r4, #245
+ 901 029c F0E7     		b	.L29
+ 902              	.L48:
+ 903 029e F524     		movs	r4, #245
+ 904 02a0 EEE7     		b	.L29
+ 905              	.L49:
+ 268:Src/hex_parse.c ****     }
+ 906              		.loc 1 268 16 view .LVU322
+ 907 02a2 F124     		movs	r4, #241
+ 908 02a4 ECE7     		b	.L29
+ 909              	.L50:
+ 245:Src/hex_parse.c ****         }
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 24
+
+
+ 910              		.loc 1 245 20 view .LVU323
+ 911 02a6 F324     		movs	r4, #243
+ 912 02a8 EAE7     		b	.L29
+ 913              	.L51:
+ 914 02aa F324     		movs	r4, #243
+ 915 02ac E8E7     		b	.L29
+ 916              	.L59:
+ 917 02ae 00BF     		.align	2
+ 918              	.L58:
+ 919 02b0 00000000 		.word	Add_Addr
+ 920 02b4 00000000 		.word	.LANCHOR0
+ 921 02b8 00000000 		.word	.LANCHOR1
+ 922              		.cfi_endproc
+ 923              	.LFE73:
+ 925              		.section	.rodata.Hex_receive.str1.4,"aMS",%progbits,1
+ 926              		.align	2
+ 927              	.LC0:
+ 928 0000 45726173 		.ascii	"Erase program error\012\000"
+ 928      65207072 
+ 928      6F677261 
+ 928      6D206572 
+ 928      726F720A 
+ 929 0015 000000   		.align	2
+ 930              	.LC1:
+ 931 0018 57656C63 		.ascii	"Welcom to bootloader program\012\000"
+ 931      6F6D2074 
+ 931      6F20626F 
+ 931      6F746C6F 
+ 931      61646572 
+ 932 0036 0000     		.align	2
+ 933              	.LC2:
+ 934 0038 506C6561 		.ascii	"Please load your hex file to the MCU\012\000"
+ 934      7365206C 
+ 934      6F616420 
+ 934      796F7572 
+ 934      20686578 
+ 935 005e 0000     		.align	2
+ 936              	.LC3:
+ 937 0060 50726F67 		.ascii	"Program error: %d\000"
+ 937      72616D20 
+ 937      6572726F 
+ 937      723A2025 
+ 937      6400
+ 938 0072 0000     		.align	2
+ 939              	.LC4:
+ 940 0074 50617273 		.ascii	"Parse successful\012\000"
+ 940      65207375 
+ 940      63636573 
+ 940      7366756C 
+ 940      0A00
+ 941 0086 0000     		.align	2
+ 942              	.LC5:
+ 943 0088 4661696C 		.ascii	"Fail to parse Data\012\000"
+ 943      20746F20 
+ 943      70617273 
+ 943      65204461 
+ 943      74610A00 
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 25
+
+
+ 944              		.align	2
+ 945              	.LC6:
+ 946 009c 446F6E65 		.ascii	"Done\012\000"
+ 946      0A00
+ 947 00a2 0000     		.align	2
+ 948              	.LC7:
+ 949 00a4 53746172 		.ascii	"Start the application at %lX address\012\000"
+ 949      74207468 
+ 949      65206170 
+ 949      706C6963 
+ 949      6174696F 
+ 950 00ca 0000     		.align	2
+ 951              	.LC8:
+ 952 00cc 45786974 		.ascii	"Exit the bootloader\012\000"
+ 952      20746865 
+ 952      20626F6F 
+ 952      746C6F61 
+ 952      6465720A 
+ 953              		.section	.text.Hex_receive,"ax",%progbits
+ 954              		.align	1
+ 955              		.global	Hex_receive
+ 956              		.syntax unified
+ 957              		.thumb
+ 958              		.thumb_func
+ 959              		.fpu softvfp
+ 961              	Hex_receive:
+ 962              	.LFB74:
+ 287:Src/hex_parse.c **** 
+ 288:Src/hex_parse.c **** /*
+ 289:Src/hex_parse.c ****     return value:
+ 290:Src/hex_parse.c ****     0 -> success
+ 291:Src/hex_parse.c ****     1 -> busy
+ 292:Src/hex_parse.c **** */
+ 293:Src/hex_parse.c **** uint8_t Hex_receive(void)
+ 294:Src/hex_parse.c **** {
+ 963              		.loc 1 294 1 is_stmt 1 view -0
+ 964              		.cfi_startproc
+ 965              		@ args = 0, pretend = 0, frame = 160
+ 966              		@ frame_needed = 0, uses_anonymous_args = 0
+ 967 0000 70B5     		push	{r4, r5, r6, lr}
+ 968              	.LCFI3:
+ 969              		.cfi_def_cfa_offset 16
+ 970              		.cfi_offset 4, -16
+ 971              		.cfi_offset 5, -12
+ 972              		.cfi_offset 6, -8
+ 973              		.cfi_offset 14, -4
+ 974 0002 A8B0     		sub	sp, sp, #160
+ 975              	.LCFI4:
+ 976              		.cfi_def_cfa_offset 176
+ 295:Src/hex_parse.c ****     hex_line line;
+ 977              		.loc 1 295 5 view .LVU325
+ 296:Src/hex_parse.c ****     uint8_t i;
+ 978              		.loc 1 296 5 view .LVU326
+ 297:Src/hex_parse.c ****     uint8_t retVal;
+ 979              		.loc 1 297 5 view .LVU327
+ 298:Src/hex_parse.c ****     uint32_t page_add;
+ 980              		.loc 1 298 5 view .LVU328
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 26
+
+
+ 299:Src/hex_parse.c ****     uint32_t app_size;
+ 981              		.loc 1 299 5 view .LVU329
+ 300:Src/hex_parse.c ****     FLASH_Status flash_status;
+ 982              		.loc 1 300 5 view .LVU330
+ 301:Src/hex_parse.c ****     char buff[100] = {0};
+ 983              		.loc 1 301 5 view .LVU331
+ 984              		.loc 1 301 10 is_stmt 0 view .LVU332
+ 985 0004 0021     		movs	r1, #0
+ 986 0006 0191     		str	r1, [sp, #4]
+ 987 0008 6022     		movs	r2, #96
+ 988 000a 02A8     		add	r0, sp, #8
+ 989 000c FFF7FEFF 		bl	memset
+ 990              	.LVL117:
+ 302:Src/hex_parse.c **** 
+ 303:Src/hex_parse.c ****     switch (Hex_state)
+ 991              		.loc 1 303 5 is_stmt 1 view .LVU333
+ 992 0010 5C4B     		ldr	r3, .L83
+ 993 0012 1C78     		ldrb	r4, [r3]	@ zero_extendqisi2
+ 994 0014 032C     		cmp	r4, #3
+ 995 0016 00F2B380 		bhi	.L76
+ 996 001a DFE804F0 		tbb	[pc, r4]
+ 997              	.L63:
+ 998 001e 02       		.byte	(.L66-.L63)/2
+ 999 001f 29       		.byte	(.L65-.L63)/2
+ 1000 0020 96       		.byte	(.L64-.L63)/2
+ 1001 0021 A9       		.byte	(.L62-.L63)/2
+ 1002              		.p2align 1
+ 1003              	.L66:
+ 304:Src/hex_parse.c ****     {
+ 305:Src/hex_parse.c ****     case HEX_INIT_SEQUENCE:
+ 306:Src/hex_parse.c ****         /* Erase all old application code from _APP_VECTOR_TABLE to _APP_VECTOR_TABLE + 52K */
+ 307:Src/hex_parse.c ****         /* _APP_VECTOR_TABLE is align page */
+ 308:Src/hex_parse.c ****         FLASH_Unlock();
+ 1004              		.loc 1 308 9 view .LVU334
+ 1005 0022 FFF7FEFF 		bl	FLASH_Unlock
+ 1006              	.LVL118:
+ 309:Src/hex_parse.c ****         page_add = (uint32_t)&_APP_VECTOR_TABLE;
+ 1007              		.loc 1 309 9 view .LVU335
+ 1008              		.loc 1 309 18 is_stmt 0 view .LVU336
+ 1009 0026 584D     		ldr	r5, .L83+4
+ 1010              	.LVL119:
+ 310:Src/hex_parse.c ****         app_size = (uint32_t)&_APP_ROM_SIZE;
+ 1011              		.loc 1 310 9 is_stmt 1 view .LVU337
+ 1012              		.loc 1 310 18 is_stmt 0 view .LVU338
+ 1013 0028 584E     		ldr	r6, .L83+8
+ 1014              	.LVL120:
+ 311:Src/hex_parse.c ****         app_size /= 1024U;
+ 1015              		.loc 1 311 9 is_stmt 1 view .LVU339
+ 1016              		.loc 1 311 18 is_stmt 0 view .LVU340
+ 1017 002a B60A     		lsrs	r6, r6, #10
+ 1018              	.LVL121:
+ 312:Src/hex_parse.c ****         for (i = 0; i < app_size; i++)
+ 1019              		.loc 1 312 9 is_stmt 1 view .LVU341
+ 1020              	.L67:
+ 1021              		.loc 1 312 21 discriminator 1 view .LVU342
+ 1022              		.loc 1 312 9 is_stmt 0 discriminator 1 view .LVU343
+ 1023 002c B442     		cmp	r4, r6
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 27
+
+
+ 1024 002e 13D2     		bcs	.L78
+ 313:Src/hex_parse.c ****         {
+ 314:Src/hex_parse.c ****             flash_status = FLASH_ErasePage(page_add);
+ 1025              		.loc 1 314 13 is_stmt 1 view .LVU344
+ 1026              		.loc 1 314 28 is_stmt 0 view .LVU345
+ 1027 0030 2846     		mov	r0, r5
+ 1028 0032 FFF7FEFF 		bl	FLASH_ErasePage
+ 1029              	.LVL122:
+ 315:Src/hex_parse.c ****             if (flash_status != FLASH_COMPLETE)
+ 1030              		.loc 1 315 13 is_stmt 1 view .LVU346
+ 1031              		.loc 1 315 16 is_stmt 0 view .LVU347
+ 1032 0036 0428     		cmp	r0, #4
+ 1033 0038 04D1     		bne	.L79
+ 316:Src/hex_parse.c ****             {
+ 317:Src/hex_parse.c ****                 /* Error to erase */
+ 318:Src/hex_parse.c ****                 Hex_state = HEX_FAIL;
+ 319:Src/hex_parse.c ****                 FLASH_Lock();
+ 320:Src/hex_parse.c ****                 hex_transmitStr("Erase program error\n");
+ 321:Src/hex_parse.c ****                 retVal = 1;
+ 322:Src/hex_parse.c ****                 return retVal;
+ 323:Src/hex_parse.c ****             }
+ 324:Src/hex_parse.c ****             page_add += 1024U;       /* increase 1K */
+ 1034              		.loc 1 324 13 is_stmt 1 discriminator 2 view .LVU348
+ 1035              		.loc 1 324 22 is_stmt 0 discriminator 2 view .LVU349
+ 1036 003a 05F58065 		add	r5, r5, #1024
+ 1037              	.LVL123:
+ 312:Src/hex_parse.c ****         {
+ 1038              		.loc 1 312 35 is_stmt 1 discriminator 2 view .LVU350
+ 312:Src/hex_parse.c ****         {
+ 1039              		.loc 1 312 36 is_stmt 0 discriminator 2 view .LVU351
+ 1040 003e 0134     		adds	r4, r4, #1
+ 1041              	.LVL124:
+ 312:Src/hex_parse.c ****         {
+ 1042              		.loc 1 312 36 discriminator 2 view .LVU352
+ 1043 0040 E4B2     		uxtb	r4, r4
+ 1044              	.LVL125:
+ 312:Src/hex_parse.c ****         {
+ 1045              		.loc 1 312 36 discriminator 2 view .LVU353
+ 1046 0042 F3E7     		b	.L67
+ 1047              	.L79:
+ 318:Src/hex_parse.c ****                 FLASH_Lock();
+ 1048              		.loc 1 318 17 is_stmt 1 view .LVU354
+ 318:Src/hex_parse.c ****                 FLASH_Lock();
+ 1049              		.loc 1 318 27 is_stmt 0 view .LVU355
+ 1050 0044 4F4B     		ldr	r3, .L83
+ 1051 0046 0322     		movs	r2, #3
+ 1052 0048 1A70     		strb	r2, [r3]
+ 319:Src/hex_parse.c ****                 hex_transmitStr("Erase program error\n");
+ 1053              		.loc 1 319 17 is_stmt 1 view .LVU356
+ 1054 004a FFF7FEFF 		bl	FLASH_Lock
+ 1055              	.LVL126:
+ 320:Src/hex_parse.c ****                 retVal = 1;
+ 1056              		.loc 1 320 17 view .LVU357
+ 1057 004e 5048     		ldr	r0, .L83+12
+ 1058 0050 FFF7FEFF 		bl	hex_transmitStr
+ 1059              	.LVL127:
+ 321:Src/hex_parse.c ****                 return retVal;
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 28
+
+
+ 1060              		.loc 1 321 17 view .LVU358
+ 322:Src/hex_parse.c ****             }
+ 1061              		.loc 1 322 17 view .LVU359
+ 322:Src/hex_parse.c ****             }
+ 1062              		.loc 1 322 24 is_stmt 0 view .LVU360
+ 1063 0054 0124     		movs	r4, #1
+ 1064              	.LVL128:
+ 322:Src/hex_parse.c ****             }
+ 1065              		.loc 1 322 24 view .LVU361
+ 1066 0056 88E0     		b	.L61
+ 1067              	.LVL129:
+ 1068              	.L78:
+ 325:Src/hex_parse.c ****         }
+ 326:Src/hex_parse.c ****         FLASH_Lock();
+ 1069              		.loc 1 326 9 is_stmt 1 view .LVU362
+ 1070 0058 FFF7FEFF 		bl	FLASH_Lock
+ 1071              	.LVL130:
+ 327:Src/hex_parse.c ****         // sprintf(buff, "%lX\n", app_size);
+ 328:Src/hex_parse.c ****         // hex_transmitStr(buff);
+ 329:Src/hex_parse.c ****         hex_transmitStr("Welcom to bootloader program\n");
+ 1072              		.loc 1 329 9 view .LVU363
+ 1073 005c 4D48     		ldr	r0, .L83+16
+ 1074 005e FFF7FEFF 		bl	hex_transmitStr
+ 1075              	.LVL131:
+ 330:Src/hex_parse.c ****         hex_transmitStr("Please load your hex file to the MCU\n");
+ 1076              		.loc 1 330 9 view .LVU364
+ 1077 0062 4D48     		ldr	r0, .L83+20
+ 1078 0064 FFF7FEFF 		bl	hex_transmitStr
+ 1079              	.LVL132:
+ 331:Src/hex_parse.c ****         Hex_state = HEX_RECEIVE_DATA;
+ 1080              		.loc 1 331 9 view .LVU365
+ 1081              		.loc 1 331 19 is_stmt 0 view .LVU366
+ 1082 0068 0124     		movs	r4, #1
+ 1083              	.LVL133:
+ 1084              		.loc 1 331 19 view .LVU367
+ 1085 006a 464B     		ldr	r3, .L83
+ 1086 006c 1C70     		strb	r4, [r3]
+ 332:Src/hex_parse.c ****         retVal = 1;
+ 1087              		.loc 1 332 9 is_stmt 1 view .LVU368
+ 1088              	.LVL134:
+ 333:Src/hex_parse.c ****         break;
+ 1089              		.loc 1 333 9 view .LVU369
+ 1090 006e 7CE0     		b	.L61
+ 1091              	.LVL135:
+ 1092              	.L65:
+ 334:Src/hex_parse.c **** 
+ 335:Src/hex_parse.c ****     case HEX_RECEIVE_DATA:
+ 336:Src/hex_parse.c ****         if (getQeueuSize() > 0)
+ 1093              		.loc 1 336 9 view .LVU370
+ 1094              		.loc 1 336 13 is_stmt 0 view .LVU371
+ 1095 0070 FFF7FEFF 		bl	getQeueuSize
+ 1096              	.LVL136:
+ 1097              		.loc 1 336 12 view .LVU372
+ 1098 0074 0028     		cmp	r0, #0
+ 1099 0076 78D0     		beq	.L61
+ 337:Src/hex_parse.c ****         {
+ 338:Src/hex_parse.c ****             /* Parse the queue */
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 29
+
+
+ 339:Src/hex_parse.c ****             if (isValidHex(&line, getreadQueueEntry()) == 0)
+ 1100              		.loc 1 339 13 is_stmt 1 view .LVU373
+ 1101              		.loc 1 339 17 is_stmt 0 view .LVU374
+ 1102 0078 FFF7FEFF 		bl	getreadQueueEntry
+ 1103              	.LVL137:
+ 1104 007c 0146     		mov	r1, r0
+ 1105 007e 1AA8     		add	r0, sp, #104
+ 1106 0080 FFF7FEFF 		bl	isValidHex
+ 1107              	.LVL138:
+ 1108              		.loc 1 339 16 view .LVU375
+ 1109 0084 0546     		mov	r5, r0
+ 1110 0086 0028     		cmp	r0, #0
+ 1111 0088 58D1     		bne	.L70
+ 340:Src/hex_parse.c ****             {
+ 341:Src/hex_parse.c ****                 getQueueEntry();    /* decrease queue size */
+ 1112              		.loc 1 341 17 is_stmt 1 view .LVU376
+ 1113 008a FFF7FEFF 		bl	getQueueEntry
+ 1114              	.LVL139:
+ 342:Src/hex_parse.c ****                 /* Write to Flash */
+ 343:Src/hex_parse.c ****                 if (line.length > 0)
+ 1115              		.loc 1 343 17 view .LVU377
+ 1116              		.loc 1 343 25 is_stmt 0 view .LVU378
+ 1117 008e 9DF89A30 		ldrb	r3, [sp, #154]	@ zero_extendqisi2
+ 1118              		.loc 1 343 20 view .LVU379
+ 1119 0092 002B     		cmp	r3, #0
+ 1120 0094 40D0     		beq	.L71
+ 344:Src/hex_parse.c ****                 {
+ 345:Src/hex_parse.c ****                     FLASH_Unlock();
+ 1121              		.loc 1 345 21 is_stmt 1 view .LVU380
+ 1122 0096 FFF7FEFF 		bl	FLASH_Unlock
+ 1123              	.LVL140:
+ 346:Src/hex_parse.c ****                     for (i = 0; (int8_t)i <= (int8_t)((int8_t)line.length - 4); i += 4)
+ 1124              		.loc 1 346 21 view .LVU381
+ 1125              	.L72:
+ 1126              		.loc 1 346 33 discriminator 1 view .LVU382
+ 1127              		.loc 1 346 67 is_stmt 0 discriminator 1 view .LVU383
+ 1128 009a 9DF89A20 		ldrb	r2, [sp, #154]	@ zero_extendqisi2
+ 1129              		.loc 1 346 75 discriminator 1 view .LVU384
+ 1130 009e 131F     		subs	r3, r2, #4
+ 1131 00a0 5BB2     		sxtb	r3, r3
+ 1132              		.loc 1 346 43 discriminator 1 view .LVU385
+ 1133 00a2 69B2     		sxtb	r1, r5
+ 1134              		.loc 1 346 21 discriminator 1 view .LVU386
+ 1135 00a4 8B42     		cmp	r3, r1
+ 1136 00a6 19DB     		blt	.L80
+ 347:Src/hex_parse.c ****                     {
+ 348:Src/hex_parse.c ****                         flash_status = FLASH_ProgramWord((uint32_t)&line.add[i], 
+ 1137              		.loc 1 348 25 is_stmt 1 view .LVU387
+ 1138              		.loc 1 348 40 is_stmt 0 view .LVU388
+ 1139 00a8 1AAB     		add	r3, sp, #104
+ 1140 00aa 5959     		ldr	r1, [r3, r5]
+ 1141 00ac 2798     		ldr	r0, [sp, #156]
+ 1142 00ae 2844     		add	r0, r0, r5
+ 1143 00b0 FFF7FEFF 		bl	FLASH_ProgramWord
+ 1144              	.LVL141:
+ 1145 00b4 0646     		mov	r6, r0
+ 1146              	.LVL142:
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 30
+
+
+ 349:Src/hex_parse.c ****                             *(uint32_t *)&line.buff[i]);
+ 350:Src/hex_parse.c ****                         if (flash_status != FLASH_COMPLETE)
+ 1147              		.loc 1 350 25 is_stmt 1 view .LVU389
+ 1148              		.loc 1 350 28 is_stmt 0 view .LVU390
+ 1149 00b6 0428     		cmp	r0, #4
+ 1150 00b8 02D1     		bne	.L81
+ 346:Src/hex_parse.c ****                     {
+ 1151              		.loc 1 346 81 is_stmt 1 discriminator 2 view .LVU391
+ 346:Src/hex_parse.c ****                     {
+ 1152              		.loc 1 346 83 is_stmt 0 discriminator 2 view .LVU392
+ 1153 00ba 0435     		adds	r5, r5, #4
+ 1154              	.LVL143:
+ 346:Src/hex_parse.c ****                     {
+ 1155              		.loc 1 346 83 discriminator 2 view .LVU393
+ 1156 00bc EDB2     		uxtb	r5, r5
+ 1157              	.LVL144:
+ 346:Src/hex_parse.c ****                     {
+ 1158              		.loc 1 346 83 discriminator 2 view .LVU394
+ 1159 00be ECE7     		b	.L72
+ 1160              	.L81:
+ 351:Src/hex_parse.c ****                         {
+ 352:Src/hex_parse.c ****                             /* Error to erase */
+ 353:Src/hex_parse.c ****                             Hex_state = HEX_FAIL;
+ 1161              		.loc 1 353 29 is_stmt 1 view .LVU395
+ 1162              		.loc 1 353 39 is_stmt 0 view .LVU396
+ 1163 00c0 304B     		ldr	r3, .L83
+ 1164 00c2 0322     		movs	r2, #3
+ 1165 00c4 1A70     		strb	r2, [r3]
+ 354:Src/hex_parse.c ****                             FLASH_Lock();
+ 1166              		.loc 1 354 29 is_stmt 1 view .LVU397
+ 1167 00c6 FFF7FEFF 		bl	FLASH_Lock
+ 1168              	.LVL145:
+ 355:Src/hex_parse.c ****                             sprintf(buff, "Program error: %d", flash_status);
+ 1169              		.loc 1 355 29 view .LVU398
+ 1170 00ca 3246     		mov	r2, r6
+ 1171 00cc 3349     		ldr	r1, .L83+24
+ 1172 00ce 01A8     		add	r0, sp, #4
+ 1173 00d0 FFF7FEFF 		bl	sprintf
+ 1174              	.LVL146:
+ 356:Src/hex_parse.c ****                             hex_transmitStr(buff);
+ 1175              		.loc 1 356 29 view .LVU399
+ 1176 00d4 01A8     		add	r0, sp, #4
+ 1177 00d6 FFF7FEFF 		bl	hex_transmitStr
+ 1178              	.LVL147:
+ 357:Src/hex_parse.c ****                             retVal = 1;
+ 1179              		.loc 1 357 29 view .LVU400
+ 358:Src/hex_parse.c ****                             return retVal;
+ 1180              		.loc 1 358 29 view .LVU401
+ 1181              		.loc 1 358 36 is_stmt 0 view .LVU402
+ 1182 00da 46E0     		b	.L61
+ 1183              	.LVL148:
+ 1184              	.L80:
+ 359:Src/hex_parse.c ****                         }
+ 360:Src/hex_parse.c ****                     }
+ 361:Src/hex_parse.c ****                     if ((line.length % 4) == 0)
+ 1185              		.loc 1 361 21 is_stmt 1 view .LVU403
+ 1186              		.loc 1 361 24 is_stmt 0 view .LVU404
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 31
+
+
+ 1187 00dc 12F0030F 		tst	r2, #3
+ 1188 00e0 18D1     		bne	.L75
+ 362:Src/hex_parse.c ****                     {
+ 363:Src/hex_parse.c ****                         line.buff[i + 1] = line.add[i + 1];     /* Save old value from i + 1 memory
+ 1189              		.loc 1 363 25 is_stmt 1 view .LVU405
+ 1190              		.loc 1 363 37 is_stmt 0 view .LVU406
+ 1191 00e2 6B1C     		adds	r3, r5, #1
+ 1192              		.loc 1 363 52 view .LVU407
+ 1193 00e4 2798     		ldr	r0, [sp, #156]
+ 1194 00e6 2844     		add	r0, r0, r5
+ 1195 00e8 4278     		ldrb	r2, [r0, #1]	@ zero_extendqisi2
+ 1196              		.loc 1 363 42 view .LVU408
+ 1197 00ea 28A9     		add	r1, sp, #160
+ 1198 00ec 0B44     		add	r3, r3, r1
+ 1199 00ee 03F8382C 		strb	r2, [r3, #-56]
+ 364:Src/hex_parse.c ****                         line.buff[i + 2] = line.add[i + 2];
+ 1200              		.loc 1 364 25 is_stmt 1 view .LVU409
+ 1201              		.loc 1 364 37 is_stmt 0 view .LVU410
+ 1202 00f2 AB1C     		adds	r3, r5, #2
+ 1203              		.loc 1 364 52 view .LVU411
+ 1204 00f4 8278     		ldrb	r2, [r0, #2]	@ zero_extendqisi2
+ 1205              		.loc 1 364 42 view .LVU412
+ 1206 00f6 0B44     		add	r3, r3, r1
+ 1207 00f8 03F8382C 		strb	r2, [r3, #-56]
+ 365:Src/hex_parse.c ****                         line.buff[i + 3] = line.add[i + 3];
+ 1208              		.loc 1 365 25 is_stmt 1 view .LVU413
+ 1209              		.loc 1 365 37 is_stmt 0 view .LVU414
+ 1210 00fc EB1C     		adds	r3, r5, #3
+ 1211              		.loc 1 365 52 view .LVU415
+ 1212 00fe C278     		ldrb	r2, [r0, #3]	@ zero_extendqisi2
+ 1213              		.loc 1 365 42 view .LVU416
+ 1214 0100 0B44     		add	r3, r3, r1
+ 1215 0102 03F8382C 		strb	r2, [r3, #-56]
+ 366:Src/hex_parse.c ****                         flash_status = FLASH_ProgramWord((uint32_t)&line.add[i], 
+ 1216              		.loc 1 366 25 is_stmt 1 view .LVU417
+ 1217              		.loc 1 366 40 is_stmt 0 view .LVU418
+ 1218 0106 1AAB     		add	r3, sp, #104
+ 1219 0108 5959     		ldr	r1, [r3, r5]
+ 1220 010a FFF7FEFF 		bl	FLASH_ProgramWord
+ 1221              	.LVL149:
+ 1222 010e 0546     		mov	r5, r0
+ 1223              	.LVL150:
+ 367:Src/hex_parse.c ****                             *(uint32_t *)&line.buff[i]);
+ 368:Src/hex_parse.c ****                         if (flash_status != FLASH_COMPLETE)
+ 1224              		.loc 1 368 25 is_stmt 1 view .LVU419
+ 1225              		.loc 1 368 28 is_stmt 0 view .LVU420
+ 1226 0110 0428     		cmp	r0, #4
+ 1227 0112 05D1     		bne	.L82
+ 1228              	.LVL151:
+ 1229              	.L75:
+ 369:Src/hex_parse.c ****                         {
+ 370:Src/hex_parse.c ****                             /* Error to erase */
+ 371:Src/hex_parse.c ****                             Hex_state = HEX_FAIL;
+ 372:Src/hex_parse.c ****                             FLASH_Lock();
+ 373:Src/hex_parse.c ****                             sprintf(buff, "Program error: %d", flash_status);
+ 374:Src/hex_parse.c ****                             hex_transmitStr(buff);
+ 375:Src/hex_parse.c ****                             retVal = 1;
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 32
+
+
+ 376:Src/hex_parse.c ****                             return retVal;
+ 377:Src/hex_parse.c ****                         }
+ 378:Src/hex_parse.c ****                     }
+ 379:Src/hex_parse.c ****                     FLASH_Lock();
+ 1230              		.loc 1 379 21 is_stmt 1 view .LVU421
+ 1231 0114 FFF7FEFF 		bl	FLASH_Lock
+ 1232              	.LVL152:
+ 1233              	.L71:
+ 380:Src/hex_parse.c ****                 }
+ 381:Src/hex_parse.c ****                 hex_transmitStr("Parse successful\n");
+ 1234              		.loc 1 381 17 view .LVU422
+ 1235 0118 2148     		ldr	r0, .L83+28
+ 1236 011a FFF7FEFF 		bl	hex_transmitStr
+ 1237              	.LVL153:
+ 1238 011e 24E0     		b	.L61
+ 1239              	.LVL154:
+ 1240              	.L82:
+ 371:Src/hex_parse.c ****                             FLASH_Lock();
+ 1241              		.loc 1 371 29 view .LVU423
+ 371:Src/hex_parse.c ****                             FLASH_Lock();
+ 1242              		.loc 1 371 39 is_stmt 0 view .LVU424
+ 1243 0120 184B     		ldr	r3, .L83
+ 1244 0122 0322     		movs	r2, #3
+ 1245 0124 1A70     		strb	r2, [r3]
+ 372:Src/hex_parse.c ****                             sprintf(buff, "Program error: %d", flash_status);
+ 1246              		.loc 1 372 29 is_stmt 1 view .LVU425
+ 1247 0126 FFF7FEFF 		bl	FLASH_Lock
+ 1248              	.LVL155:
+ 373:Src/hex_parse.c ****                             hex_transmitStr(buff);
+ 1249              		.loc 1 373 29 view .LVU426
+ 1250 012a 2A46     		mov	r2, r5
+ 1251 012c 1B49     		ldr	r1, .L83+24
+ 1252 012e 01A8     		add	r0, sp, #4
+ 1253 0130 FFF7FEFF 		bl	sprintf
+ 1254              	.LVL156:
+ 374:Src/hex_parse.c ****                             retVal = 1;
+ 1255              		.loc 1 374 29 view .LVU427
+ 1256 0134 01A8     		add	r0, sp, #4
+ 1257 0136 FFF7FEFF 		bl	hex_transmitStr
+ 1258              	.LVL157:
+ 375:Src/hex_parse.c ****                             return retVal;
+ 1259              		.loc 1 375 29 view .LVU428
+ 376:Src/hex_parse.c ****                         }
+ 1260              		.loc 1 376 29 view .LVU429
+ 376:Src/hex_parse.c ****                         }
+ 1261              		.loc 1 376 36 is_stmt 0 view .LVU430
+ 1262 013a 16E0     		b	.L61
+ 1263              	.LVL158:
+ 1264              	.L70:
+ 382:Src/hex_parse.c ****             }
+ 383:Src/hex_parse.c ****             else
+ 384:Src/hex_parse.c ****             {
+ 385:Src/hex_parse.c ****                 hex_transmitStr("Fail to parse Data\n");
+ 1265              		.loc 1 385 17 is_stmt 1 view .LVU431
+ 1266 013c 1948     		ldr	r0, .L83+32
+ 1267 013e FFF7FEFF 		bl	hex_transmitStr
+ 1268              	.LVL159:
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 33
+
+
+ 386:Src/hex_parse.c ****                 Hex_state = HEX_FAIL;
+ 1269              		.loc 1 386 17 view .LVU432
+ 1270              		.loc 1 386 27 is_stmt 0 view .LVU433
+ 1271 0142 104B     		ldr	r3, .L83
+ 1272 0144 0322     		movs	r2, #3
+ 1273 0146 1A70     		strb	r2, [r3]
+ 1274 0148 0FE0     		b	.L61
+ 1275              	.L64:
+ 387:Src/hex_parse.c ****             }
+ 388:Src/hex_parse.c ****         }
+ 389:Src/hex_parse.c ****         retVal = 1;
+ 390:Src/hex_parse.c ****         break;
+ 391:Src/hex_parse.c **** 
+ 392:Src/hex_parse.c ****     case HEX_DONE:
+ 393:Src/hex_parse.c ****         hex_transmitStr("Done\n");
+ 1276              		.loc 1 393 9 is_stmt 1 view .LVU434
+ 1277 014a 1748     		ldr	r0, .L83+36
+ 1278 014c FFF7FEFF 		bl	hex_transmitStr
+ 1279              	.LVL160:
+ 394:Src/hex_parse.c ****         sprintf(buff, "Start the application at %lX address\n", 
+ 1280              		.loc 1 394 9 view .LVU435
+ 1281 0150 164B     		ldr	r3, .L83+40
+ 1282 0152 1A68     		ldr	r2, [r3]
+ 1283 0154 1649     		ldr	r1, .L83+44
+ 1284 0156 01A8     		add	r0, sp, #4
+ 1285 0158 FFF7FEFF 		bl	sprintf
+ 1286              	.LVL161:
+ 395:Src/hex_parse.c ****             ResetHandler_Addr);
+ 396:Src/hex_parse.c ****         hex_transmitStr(buff);
+ 1287              		.loc 1 396 9 view .LVU436
+ 1288 015c 01A8     		add	r0, sp, #4
+ 1289 015e FFF7FEFF 		bl	hex_transmitStr
+ 1290              	.LVL162:
+ 397:Src/hex_parse.c ****         Hex_state = HEX_DEFAULT;
+ 1291              		.loc 1 397 9 view .LVU437
+ 1292              		.loc 1 397 19 is_stmt 0 view .LVU438
+ 1293 0162 084B     		ldr	r3, .L83
+ 1294 0164 FF22     		movs	r2, #255
+ 1295 0166 1A70     		strb	r2, [r3]
+ 398:Src/hex_parse.c ****         retVal = 0;
+ 1296              		.loc 1 398 9 is_stmt 1 view .LVU439
+ 1297              	.LVL163:
+ 399:Src/hex_parse.c ****         break;
+ 1298              		.loc 1 399 9 view .LVU440
+ 398:Src/hex_parse.c ****         retVal = 0;
+ 1299              		.loc 1 398 16 is_stmt 0 view .LVU441
+ 1300 0168 0024     		movs	r4, #0
+ 1301              	.LVL164:
+ 1302              	.L61:
+ 400:Src/hex_parse.c ****     
+ 401:Src/hex_parse.c ****     case HEX_FAIL:
+ 402:Src/hex_parse.c ****         hex_transmitStr("Exit the bootloader\n");
+ 403:Src/hex_parse.c ****         Hex_state = HEX_DEFAULT;
+ 404:Src/hex_parse.c ****         retVal = 1;
+ 405:Src/hex_parse.c ****         break;
+ 406:Src/hex_parse.c **** 
+ 407:Src/hex_parse.c ****     default:
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 34
+
+
+ 408:Src/hex_parse.c ****         retVal = 1;
+ 409:Src/hex_parse.c ****         break;
+ 410:Src/hex_parse.c ****     }
+ 411:Src/hex_parse.c **** 
+ 412:Src/hex_parse.c ****     return retVal;
+ 413:Src/hex_parse.c **** }...
+ 1303              		.loc 1 413 1 view .LVU442
+ 1304 016a 2046     		mov	r0, r4
+ 1305 016c 28B0     		add	sp, sp, #160
+ 1306              	.LCFI5:
+ 1307              		.cfi_remember_state
+ 1308              		.cfi_def_cfa_offset 16
+ 1309              		@ sp needed
+ 1310 016e 70BD     		pop	{r4, r5, r6, pc}
+ 1311              	.L62:
+ 1312              	.LCFI6:
+ 1313              		.cfi_restore_state
+ 402:Src/hex_parse.c ****         hex_transmitStr("Exit the bootloader\n");
+ 1314              		.loc 1 402 9 is_stmt 1 view .LVU443
+ 1315 0170 1048     		ldr	r0, .L83+48
+ 1316 0172 FFF7FEFF 		bl	hex_transmitStr
+ 1317              	.LVL165:
+ 403:Src/hex_parse.c ****         Hex_state = HEX_DEFAULT;
+ 1318              		.loc 1 403 9 view .LVU444
+ 403:Src/hex_parse.c ****         Hex_state = HEX_DEFAULT;
+ 1319              		.loc 1 403 19 is_stmt 0 view .LVU445
+ 1320 0176 034B     		ldr	r3, .L83
+ 1321 0178 FF22     		movs	r2, #255
+ 1322 017a 1A70     		strb	r2, [r3]
+ 404:Src/hex_parse.c ****         retVal = 1;
+ 1323              		.loc 1 404 9 is_stmt 1 view .LVU446
+ 1324              	.LVL166:
+ 405:Src/hex_parse.c ****         break;
+ 1325              		.loc 1 405 9 view .LVU447
+ 404:Src/hex_parse.c ****         retVal = 1;
+ 1326              		.loc 1 404 16 is_stmt 0 view .LVU448
+ 1327 017c 0124     		movs	r4, #1
+ 405:Src/hex_parse.c ****         break;
+ 1328              		.loc 1 405 9 view .LVU449
+ 1329 017e F4E7     		b	.L61
+ 1330              	.LVL167:
+ 1331              	.L76:
+ 303:Src/hex_parse.c ****     switch (Hex_state)
+ 1332              		.loc 1 303 5 view .LVU450
+ 1333 0180 0124     		movs	r4, #1
+ 1334 0182 F2E7     		b	.L61
+ 1335              	.L84:
+ 1336              		.align	2
+ 1337              	.L83:
+ 1338 0184 00000000 		.word	.LANCHOR0
+ 1339 0188 00000000 		.word	_APP_VECTOR_TABLE
+ 1340 018c 00000000 		.word	_APP_ROM_SIZE
+ 1341 0190 00000000 		.word	.LC0
+ 1342 0194 18000000 		.word	.LC1
+ 1343 0198 38000000 		.word	.LC2
+ 1344 019c 60000000 		.word	.LC3
+ 1345 01a0 74000000 		.word	.LC4
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 35
+
+
+ 1346 01a4 88000000 		.word	.LC5
+ 1347 01a8 9C000000 		.word	.LC6
+ 1348 01ac 00000000 		.word	.LANCHOR1
+ 1349 01b0 A4000000 		.word	.LC7
+ 1350 01b4 CC000000 		.word	.LC8
+ 1351              		.cfi_endproc
+ 1352              	.LFE74:
+ 1354              		.comm	Add_Addr,4,4
+ 1355              		.global	ResetHandler_Addr
+ 1356              		.comm	CurrentEntry,4,4
+ 1357              		.global	Hex_state
+ 1358              		.section	.bss.Hex_state,"aw",%nobits
+ 1359              		.set	.LANCHOR0,. + 0
+ 1362              	Hex_state:
+ 1363 0000 00       		.space	1
+ 1364              		.section	.data.ResetHandler_Addr,"aw"
+ 1365              		.align	2
+ 1366              		.set	.LANCHOR1,. + 0
+ 1369              	ResetHandler_Addr:
+ 1370 0000 FFFFFFFF 		.word	-1
+ 1371              		.text
+ 1372              	.Letext0:
+ 1373              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 1374              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 1375              		.file 4 "Drivers/CMSIS/CM3/CoreSupport/core_cm3.h"
+ 1376              		.file 5 "Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.h"
+ 1377              		.file 6 "Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/stm32f10x.h"
+ 1378              		.file 7 "Drivers/STM32F10x_StdPeriph_Driver/inc/stm32f10x_flash.h"
+ 1379              		.file 8 "Inc/main.h"
+ 1380              		.file 9 "Inc/queue.h"
+ 1381              		.file 10 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\lib\\gcc\\arm-non
+ 1382              		.file 11 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1383              		.file 12 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1384              		.file 13 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1385              		.file 14 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1386              		.file 15 "Drivers/STM32F10x_StdPeriph_Driver/inc/stm32f10x_usart.h"
+ 1387              		.file 16 "<built-in>"
+ARM GAS  C:\cygwin64\tmp\ccxp42Dk.s 			page 36
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 hex_parse.c
+C:\cygwin64\tmp\ccxp42Dk.s:16     .text.USART1_IRQHandler:00000000 $t
+C:\cygwin64\tmp\ccxp42Dk.s:24     .text.USART1_IRQHandler:00000000 USART1_IRQHandler
+C:\cygwin64\tmp\ccxp42Dk.s:136    .text.USART1_IRQHandler:00000078 $d
+                            *COM*:00000004 CurrentEntry
+C:\cygwin64\tmp\ccxp42Dk.s:144    .text.hex_transmitStr:00000000 $t
+C:\cygwin64\tmp\ccxp42Dk.s:151    .text.hex_transmitStr:00000000 hex_transmitStr
+C:\cygwin64\tmp\ccxp42Dk.s:204    .text.hex_transmitStr:00000024 $d
+C:\cygwin64\tmp\ccxp42Dk.s:209    .text.validateChar:00000000 $t
+C:\cygwin64\tmp\ccxp42Dk.s:216    .text.validateChar:00000000 validateChar
+C:\cygwin64\tmp\ccxp42Dk.s:270    .text.isValidHex:00000000 $t
+C:\cygwin64\tmp\ccxp42Dk.s:277    .text.isValidHex:00000000 isValidHex
+C:\cygwin64\tmp\ccxp42Dk.s:919    .text.isValidHex:000002b0 $d
+                            *COM*:00000004 Add_Addr
+C:\cygwin64\tmp\ccxp42Dk.s:926    .rodata.Hex_receive.str1.4:00000000 $d
+C:\cygwin64\tmp\ccxp42Dk.s:954    .text.Hex_receive:00000000 $t
+C:\cygwin64\tmp\ccxp42Dk.s:961    .text.Hex_receive:00000000 Hex_receive
+C:\cygwin64\tmp\ccxp42Dk.s:998    .text.Hex_receive:0000001e $d
+C:\cygwin64\tmp\ccxp42Dk.s:1002   .text.Hex_receive:00000022 $t
+C:\cygwin64\tmp\ccxp42Dk.s:1338   .text.Hex_receive:00000184 $d
+C:\cygwin64\tmp\ccxp42Dk.s:1369   .data.ResetHandler_Addr:00000000 ResetHandler_Addr
+C:\cygwin64\tmp\ccxp42Dk.s:1362   .bss.Hex_state:00000000 Hex_state
+C:\cygwin64\tmp\ccxp42Dk.s:1363   .bss.Hex_state:00000000 $d
+C:\cygwin64\tmp\ccxp42Dk.s:1365   .data.ResetHandler_Addr:00000000 $d
+
+UNDEFINED SYMBOLS
+USART_ReceiveData
+getFreeQueueEntry
+putQueueEntry
+USART_SendData
+USART_GetFlagStatus
+memset
+FLASH_Unlock
+FLASH_ErasePage
+FLASH_Lock
+getQeueuSize
+getreadQueueEntry
+getQueueEntry
+FLASH_ProgramWord
+sprintf
+_APP_VECTOR_TABLE
+_APP_ROM_SIZE

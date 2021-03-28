@@ -1,4 +1,4 @@
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 1
 
 
    1              		.cpu cortex-m3
@@ -58,7 +58,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
   31:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   *    add some code to deal with this issue inside the SetSysClock() function.
   32:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   *
   33:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   * 4. The default value of HSE crystal is set to 8 MHz (or 25 MHz, depedning on
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 2
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 2
 
 
   34:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   *    the product used), refer to "HSE_VALUE" define in "stm32f10x.h" file. 
@@ -118,7 +118,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
   88:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****    1. After each device reset the HSI is used as System clock source.
   89:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
   90:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****    2. Please make sure that the selected System clock doesn't exceed your device's
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 3
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 3
 
 
   91:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       maximum frequency.
@@ -178,7 +178,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  145:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   * @{
  146:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   */
  147:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 4
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 4
 
 
  148:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** /*******************************************************************************
@@ -238,7 +238,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  202:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   */
  203:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
  204:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** /**
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 5
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 5
 
 
  205:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   * @brief  Setup the microcontroller system
@@ -298,16 +298,16 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  259:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
  260:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   /* Configure the System clock frequency, HCLK, PCLK2 and PCLK1 prescalers */
  261:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   /* Configure the Flash Latency cycles and enable prefetch buffer */
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 6
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 6
 
 
  262:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   SetSysClock();
  263:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
- 264:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** // #ifdef VECT_TAB_SRAM
- 265:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** //   SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM. */
- 266:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** // #else
- 267:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** //   SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH. */
- 268:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** // #endif 
+ 264:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #ifdef VECT_TAB_SRAM
+ 265:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM. */
+ 266:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #else
+ 267:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH. */
+ 268:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #endif 
  269:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** }
  270:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
  271:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** /**
@@ -358,7 +358,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  316:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #endif /* STM32F10X_LD_VL or STM32F10X_MD_VL or STM32F10X_HD_VL */
  317:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     
  318:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   /* Get SYSCLK source -------------------------------------------------------*/
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 7
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 7
 
 
  319:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   tmp = RCC->CFGR & RCC_CFGR_SWS;
@@ -418,7 +418,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  373:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       if (pllsource == 0x00)
  374:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       {
  375:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         /* HSI oscillator clock divided by 2 selected as PLL clock entry */
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 8
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 8
 
 
  376:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         SystemCoreClock = (HSI_VALUE >> 1) * pllmull;
@@ -478,7 +478,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  430:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   SetSysClockTo56();  
  431:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #elif defined SYSCLK_FREQ_72MHz
  432:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   SetSysClockTo72();
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 9
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 9
 
 
  433:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #endif
@@ -538,7 +538,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  487:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   FSMC_Bank1->BTCR[4] = 0x00001011;
  488:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   FSMC_Bank1->BTCR[5] = 0x00000200;
  489:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** }
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 10
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 10
 
 
  490:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #endif /* DATA_IN_ExtSRAM */
@@ -598,7 +598,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  544:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 	}
  545:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #endif /* STM32F10X_CL */
  546:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #endif
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 11
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 11
 
 
  547:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****  
@@ -658,7 +658,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  601:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   }  
  602:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
  603:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   if (HSEStatus == (uint32_t)0x01)
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 12
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 12
 
 
  604:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   {
@@ -718,7 +718,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  658:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     {
  659:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     }
  660:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 13
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 13
 
 
  661:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     /* Select PLL as system clock source */
@@ -778,7 +778,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  715:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****  
  716:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     /* HCLK = SYSCLK */
  717:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     RCC->CFGR |= (uint32_t)RCC_CFGR_HPRE_DIV1;
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 14
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 14
 
 
  718:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       
@@ -838,7 +838,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  772:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   { /* If HSE fails to start-up, the application will have wrong clock 
  773:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****          configuration. User can add here some code to deal with this error */
  774:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   } 
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 15
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 15
 
 
  775:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** }
@@ -898,7 +898,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  829:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     /* PREDIV1 configuration: PREDIV1CLK = PLL2 / 5 = 8 MHz */
  830:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         
  831:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     RCC->CFGR2 &= (uint32_t)~(RCC_CFGR2_PREDIV2 | RCC_CFGR2_PLL2MUL |
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 16
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 16
 
 
  832:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****                               RCC_CFGR2_PREDIV1 | RCC_CFGR2_PREDIV1SRC);
@@ -958,7 +958,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  886:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** {
  887:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   __IO uint32_t StartUpCounter = 0, HSEStatus = 0;
  888:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 17
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 17
 
 
  889:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   /* SYSCLK, HCLK, PCLK2 and PCLK1 configuration ---------------------------*/   
@@ -1018,7 +1018,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  943:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     
  944:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****    
  945:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     /* PLL configuration: PLLCLK = PREDIV1 * 7 = 56 MHz */ 
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 18
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 18
 
 
  946:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     RCC->CFGR &= (uint32_t)~(RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLSRC | RCC_CFGR_PLLMULL);
@@ -1078,7 +1078,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
   36 0002 0023     		movs	r3, #0
   37 0004 0193     		str	r3, [sp, #4]
   38              		.loc 1 989 37 view .LVU3
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 19
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 19
 
 
   39 0006 0093     		str	r3, [sp]
@@ -1138,7 +1138,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
 1004:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     HSEStatus = (uint32_t)0x01;
   79              		.loc 1 1004 5 is_stmt 1 view .LVU21
   80              		.loc 1 1004 15 is_stmt 0 view .LVU22
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 20
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 20
 
 
   81 0038 0123     		movs	r3, #1
@@ -1198,7 +1198,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
 1049:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     RCC->CFGR &= (uint32_t)~(RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLSRC | RCC_CFGR_PLLMULL);
 1050:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLSRC_PREDIV1 | 
 1051:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****                             RCC_CFGR_PLLMULL9); 
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 21
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 21
 
 
 1052:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #else    
@@ -1258,7 +1258,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  112 0054 1A60     		str	r2, [r3]
 1017:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     FLASH->ACR |= (uint32_t)FLASH_ACR_LATENCY_2;    
  113              		.loc 1 1017 5 is_stmt 1 view .LVU31
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 22
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 22
 
 
 1017:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     FLASH->ACR |= (uint32_t)FLASH_ACR_LATENCY_2;    
@@ -1318,7 +1318,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  152              		.loc 1 1063 5 is_stmt 1 view .LVU47
  153              	.L7:
 1065:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 23
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 23
 
 
  154              		.loc 1 1065 5 discriminator 1 view .LVU48
@@ -1378,7 +1378,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  196              		.syntax unified
  197              		.thumb
  198              		.thumb_func
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 24
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 24
 
 
  199              		.fpu softvfp
@@ -1426,7 +1426,7 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  239              		.loc 1 216 3 view .LVU66
  216:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
  240              		.loc 1 216 11 is_stmt 0 view .LVU67
- 241 0002 0E4B     		ldr	r3, .L17
+ 241 0002 104B     		ldr	r3, .L17
  242 0004 1A68     		ldr	r2, [r3]
  243 0006 42F00102 		orr	r2, r2, #1
  244 000a 1A60     		str	r2, [r3]
@@ -1435,10 +1435,10 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  220:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #else
  246              		.loc 1 220 13 is_stmt 0 view .LVU69
  247 000c 5968     		ldr	r1, [r3, #4]
- 248 000e 0C4A     		ldr	r2, .L17+4
+ 248 000e 0E4A     		ldr	r2, .L17+4
  249 0010 0A40     		ands	r2, r2, r1
  250 0012 5A60     		str	r2, [r3, #4]
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 25
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 25
 
 
  226:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
@@ -1473,272 +1473,280 @@ ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 1
  271              		.loc 1 262 3 is_stmt 1 view .LVU78
  272 0036 FFF7FEFF 		bl	SetSysClock
  273              	.LVL1:
+ 267:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #endif 
+ 274              		.loc 1 267 3 view .LVU79
+ 267:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** #endif 
+ 275              		.loc 1 267 13 is_stmt 0 view .LVU80
+ 276 003a 044B     		ldr	r3, .L17+8
+ 277 003c 4FF00062 		mov	r2, #134217728
+ 278 0040 9A60     		str	r2, [r3, #8]
  269:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
- 274              		.loc 1 269 1 is_stmt 0 view .LVU79
- 275 003a 08BD     		pop	{r3, pc}
- 276              	.L18:
- 277              		.align	2
- 278              	.L17:
- 279 003c 00100240 		.word	1073876992
- 280 0040 0000FFF8 		.word	-117506048
- 281              		.cfi_endproc
- 282              	.LFE67:
- 284              		.section	.text.SystemCoreClockUpdate,"ax",%progbits
- 285              		.align	1
- 286              		.global	SystemCoreClockUpdate
- 287              		.syntax unified
- 288              		.thumb
- 289              		.thumb_func
- 290              		.fpu softvfp
- 292              	SystemCoreClockUpdate:
- 293              	.LFB68:
+ 279              		.loc 1 269 1 view .LVU81
+ 280 0042 08BD     		pop	{r3, pc}
+ 281              	.L18:
+ 282              		.align	2
+ 283              	.L17:
+ 284 0044 00100240 		.word	1073876992
+ 285 0048 0000FFF8 		.word	-117506048
+ 286 004c 00ED00E0 		.word	-536810240
+ 287              		.cfi_endproc
+ 288              	.LFE67:
+ 290              		.section	.text.SystemCoreClockUpdate,"ax",%progbits
+ 291              		.align	1
+ 292              		.global	SystemCoreClockUpdate
+ 293              		.syntax unified
+ 294              		.thumb
+ 295              		.thumb_func
+ 296              		.fpu softvfp
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 26
+
+
+ 298              	SystemCoreClockUpdate:
+ 299              	.LFB68:
  307:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   uint32_t tmp = 0, pllmull = 0, pllsource = 0;
- 294              		.loc 1 307 1 is_stmt 1 view -0
- 295              		.cfi_startproc
- 296              		@ args = 0, pretend = 0, frame = 0
- 297              		@ frame_needed = 0, uses_anonymous_args = 0
- 298              		@ link register save eliminated.
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 26
-
-
+ 300              		.loc 1 307 1 is_stmt 1 view -0
+ 301              		.cfi_startproc
+ 302              		@ args = 0, pretend = 0, frame = 0
+ 303              		@ frame_needed = 0, uses_anonymous_args = 0
+ 304              		@ link register save eliminated.
  308:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
- 299              		.loc 1 308 3 view .LVU81
- 300              	.LVL2:
+ 305              		.loc 1 308 3 view .LVU83
+ 306              	.LVL2:
  319:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   
- 301              		.loc 1 319 3 view .LVU82
+ 307              		.loc 1 319 3 view .LVU84
  319:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   
- 302              		.loc 1 319 12 is_stmt 0 view .LVU83
- 303 0000 1F4B     		ldr	r3, .L27
- 304 0002 5B68     		ldr	r3, [r3, #4]
+ 308              		.loc 1 319 12 is_stmt 0 view .LVU85
+ 309 0000 1F4B     		ldr	r3, .L27
+ 310 0002 5B68     		ldr	r3, [r3, #4]
  319:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   
- 305              		.loc 1 319 7 view .LVU84
- 306 0004 03F00C03 		and	r3, r3, #12
- 307              	.LVL3:
+ 311              		.loc 1 319 7 view .LVU86
+ 312 0004 03F00C03 		and	r3, r3, #12
+ 313              	.LVL3:
  321:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   {
- 308              		.loc 1 321 3 is_stmt 1 view .LVU85
- 309 0008 042B     		cmp	r3, #4
- 310 000a 15D0     		beq	.L20
- 311 000c 082B     		cmp	r3, #8
- 312 000e 17D0     		beq	.L21
- 313 0010 1BB1     		cbz	r3, .L26
+ 314              		.loc 1 321 3 is_stmt 1 view .LVU87
+ 315 0008 042B     		cmp	r3, #4
+ 316 000a 15D0     		beq	.L20
+ 317 000c 082B     		cmp	r3, #8
+ 318 000e 17D0     		beq	.L21
+ 319 0010 1BB1     		cbz	r3, .L26
  403:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       break;
- 314              		.loc 1 403 7 view .LVU86
+ 320              		.loc 1 403 7 view .LVU88
  403:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       break;
- 315              		.loc 1 403 23 is_stmt 0 view .LVU87
- 316 0012 1C4B     		ldr	r3, .L27+4
- 317              	.LVL4:
+ 321              		.loc 1 403 23 is_stmt 0 view .LVU89
+ 322 0012 1C4B     		ldr	r3, .L27+4
+ 323              	.LVL4:
  403:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       break;
- 318              		.loc 1 403 23 view .LVU88
- 319 0014 1C4A     		ldr	r2, .L27+8
- 320 0016 1A60     		str	r2, [r3]
+ 324              		.loc 1 403 23 view .LVU90
+ 325 0014 1C4A     		ldr	r2, .L27+8
+ 326 0016 1A60     		str	r2, [r3]
  404:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   }
- 321              		.loc 1 404 7 is_stmt 1 view .LVU89
- 322 0018 02E0     		b	.L23
- 323              	.LVL5:
- 324              	.L26:
+ 327              		.loc 1 404 7 is_stmt 1 view .LVU91
+ 328 0018 02E0     		b	.L23
+ 329              	.LVL5:
+ 330              	.L26:
  324:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       break;
- 325              		.loc 1 324 7 view .LVU90
+ 331              		.loc 1 324 7 view .LVU92
  324:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       break;
- 326              		.loc 1 324 23 is_stmt 0 view .LVU91
- 327 001a 1A4B     		ldr	r3, .L27+4
- 328              	.LVL6:
+ 332              		.loc 1 324 23 is_stmt 0 view .LVU93
+ 333 001a 1A4B     		ldr	r3, .L27+4
+ 334              	.LVL6:
  324:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       break;
- 329              		.loc 1 324 23 view .LVU92
- 330 001c 1A4A     		ldr	r2, .L27+8
- 331 001e 1A60     		str	r2, [r3]
+ 335              		.loc 1 324 23 view .LVU94
+ 336 001c 1A4A     		ldr	r2, .L27+8
+ 337 001e 1A60     		str	r2, [r3]
  325:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     case 0x04:  /* HSE used as system clock */
- 332              		.loc 1 325 7 is_stmt 1 view .LVU93
- 333              	.LVL7:
- 334              	.L23:
- 409:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   /* HCLK clock frequency */
- 335              		.loc 1 409 3 view .LVU94
- 409:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   /* HCLK clock frequency */
- 336              		.loc 1 409 28 is_stmt 0 view .LVU95
- 337 0020 174B     		ldr	r3, .L27
- 338 0022 5B68     		ldr	r3, [r3, #4]
- 409:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   /* HCLK clock frequency */
- 339              		.loc 1 409 52 view .LVU96
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 27
+ 338              		.loc 1 325 7 is_stmt 1 view .LVU95
+ 339              	.LVL7:
+ 340              	.L23:
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 27
 
 
- 340 0024 C3F30313 		ubfx	r3, r3, #4, #4
  409:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   /* HCLK clock frequency */
- 341              		.loc 1 409 22 view .LVU97
- 342 0028 184A     		ldr	r2, .L27+12
- 343 002a D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
- 344 002c DAB2     		uxtb	r2, r3
- 345              	.LVL8:
+ 341              		.loc 1 409 3 view .LVU96
+ 409:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   /* HCLK clock frequency */
+ 342              		.loc 1 409 28 is_stmt 0 view .LVU97
+ 343 0020 174B     		ldr	r3, .L27
+ 344 0022 5B68     		ldr	r3, [r3, #4]
+ 409:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   /* HCLK clock frequency */
+ 345              		.loc 1 409 52 view .LVU98
+ 346 0024 C3F30313 		ubfx	r3, r3, #4, #4
+ 409:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****   /* HCLK clock frequency */
+ 347              		.loc 1 409 22 view .LVU99
+ 348 0028 184A     		ldr	r2, .L27+12
+ 349 002a D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 350 002c DAB2     		uxtb	r2, r3
+ 351              	.LVL8:
  411:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** }
- 346              		.loc 1 411 3 is_stmt 1 view .LVU98
+ 352              		.loc 1 411 3 is_stmt 1 view .LVU100
  411:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** }
- 347              		.loc 1 411 19 is_stmt 0 view .LVU99
- 348 002e 1549     		ldr	r1, .L27+4
- 349 0030 0B68     		ldr	r3, [r1]
- 350 0032 D340     		lsrs	r3, r3, r2
- 351 0034 0B60     		str	r3, [r1]
+ 353              		.loc 1 411 19 is_stmt 0 view .LVU101
+ 354 002e 1549     		ldr	r1, .L27+4
+ 355 0030 0B68     		ldr	r3, [r1]
+ 356 0032 D340     		lsrs	r3, r3, r2
+ 357 0034 0B60     		str	r3, [r1]
  412:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c **** 
- 352              		.loc 1 412 1 view .LVU100
- 353 0036 7047     		bx	lr
- 354              	.LVL9:
- 355              	.L20:
+ 358              		.loc 1 412 1 view .LVU102
+ 359 0036 7047     		bx	lr
+ 360              	.LVL9:
+ 361              	.L20:
  327:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       break;
- 356              		.loc 1 327 7 is_stmt 1 view .LVU101
+ 362              		.loc 1 327 7 is_stmt 1 view .LVU103
  327:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       break;
- 357              		.loc 1 327 23 is_stmt 0 view .LVU102
- 358 0038 124B     		ldr	r3, .L27+4
- 359              	.LVL10:
+ 363              		.loc 1 327 23 is_stmt 0 view .LVU104
+ 364 0038 124B     		ldr	r3, .L27+4
+ 365              	.LVL10:
  327:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       break;
- 360              		.loc 1 327 23 view .LVU103
- 361 003a 134A     		ldr	r2, .L27+8
- 362 003c 1A60     		str	r2, [r3]
+ 366              		.loc 1 327 23 view .LVU105
+ 367 003a 134A     		ldr	r2, .L27+8
+ 368 003c 1A60     		str	r2, [r3]
  328:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****     case 0x08:  /* PLL used as system clock */
- 363              		.loc 1 328 7 is_stmt 1 view .LVU104
- 364 003e EFE7     		b	.L23
- 365              	.LVL11:
- 366              	.L21:
+ 369              		.loc 1 328 7 is_stmt 1 view .LVU106
+ 370 003e EFE7     		b	.L23
+ 371              	.LVL11:
+ 372              	.L21:
  332:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       pllsource = RCC->CFGR & RCC_CFGR_PLLSRC;
- 367              		.loc 1 332 7 view .LVU105
+ 373              		.loc 1 332 7 view .LVU107
  332:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       pllsource = RCC->CFGR & RCC_CFGR_PLLSRC;
- 368              		.loc 1 332 20 is_stmt 0 view .LVU106
- 369 0040 0F4A     		ldr	r2, .L27
- 370 0042 5368     		ldr	r3, [r2, #4]
- 371              	.LVL12:
+ 374              		.loc 1 332 20 is_stmt 0 view .LVU108
+ 375 0040 0F4A     		ldr	r2, .L27
+ 376 0042 5368     		ldr	r3, [r2, #4]
+ 377              	.LVL12:
  333:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       
- 372              		.loc 1 333 7 is_stmt 1 view .LVU107
+ 378              		.loc 1 333 7 is_stmt 1 view .LVU109
  333:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       
- 373              		.loc 1 333 22 is_stmt 0 view .LVU108
- 374 0044 5268     		ldr	r2, [r2, #4]
- 375              	.LVL13:
+ 379              		.loc 1 333 22 is_stmt 0 view .LVU110
+ 380 0044 5268     		ldr	r2, [r2, #4]
+ 381              	.LVL13:
  336:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       
- 376              		.loc 1 336 7 is_stmt 1 view .LVU109
- 336:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       
- 377              		.loc 1 336 27 is_stmt 0 view .LVU110
- 378 0046 C3F38343 		ubfx	r3, r3, #18, #4
- 379              	.LVL14:
- 336:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       
- 380              		.loc 1 336 15 view .LVU111
- 381 004a 0233     		adds	r3, r3, #2
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 28
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 28
 
 
- 382              	.LVL15:
+ 382              		.loc 1 336 7 is_stmt 1 view .LVU111
+ 336:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       
+ 383              		.loc 1 336 27 is_stmt 0 view .LVU112
+ 384 0046 C3F38343 		ubfx	r3, r3, #18, #4
+ 385              	.LVL14:
+ 336:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       
+ 386              		.loc 1 336 15 view .LVU113
+ 387 004a 0233     		adds	r3, r3, #2
+ 388              	.LVL15:
  338:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       {
- 383              		.loc 1 338 7 is_stmt 1 view .LVU112
+ 389              		.loc 1 338 7 is_stmt 1 view .LVU114
  338:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       {
- 384              		.loc 1 338 10 is_stmt 0 view .LVU113
- 385 004c 12F4803F 		tst	r2, #65536
- 386 0050 05D1     		bne	.L24
+ 390              		.loc 1 338 10 is_stmt 0 view .LVU115
+ 391 004c 12F4803F 		tst	r2, #65536
+ 392 0050 05D1     		bne	.L24
  341:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       }
- 387              		.loc 1 341 9 is_stmt 1 view .LVU114
+ 393              		.loc 1 341 9 is_stmt 1 view .LVU116
  341:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       }
- 388              		.loc 1 341 44 is_stmt 0 view .LVU115
- 389 0052 0F4A     		ldr	r2, .L27+16
- 390              	.LVL16:
+ 394              		.loc 1 341 44 is_stmt 0 view .LVU117
+ 395 0052 0F4A     		ldr	r2, .L27+16
+ 396              	.LVL16:
  341:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       }
- 391              		.loc 1 341 44 view .LVU116
- 392 0054 02FB03F3 		mul	r3, r2, r3
- 393              	.LVL17:
+ 397              		.loc 1 341 44 view .LVU118
+ 398 0054 02FB03F3 		mul	r3, r2, r3
+ 399              	.LVL17:
  341:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****       }
- 394              		.loc 1 341 25 view .LVU117
- 395 0058 0A4A     		ldr	r2, .L27+4
- 396 005a 1360     		str	r3, [r2]
- 397 005c E0E7     		b	.L23
- 398              	.LVL18:
- 399              	.L24:
+ 400              		.loc 1 341 25 view .LVU119
+ 401 0058 0A4A     		ldr	r2, .L27+4
+ 402 005a 1360     		str	r3, [r2]
+ 403 005c E0E7     		b	.L23
+ 404              	.LVL18:
+ 405              	.L24:
  351:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         {/* HSE oscillator clock divided by 2 */
- 400              		.loc 1 351 9 is_stmt 1 view .LVU118
+ 406              		.loc 1 351 9 is_stmt 1 view .LVU120
  351:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         {/* HSE oscillator clock divided by 2 */
- 401              		.loc 1 351 17 is_stmt 0 view .LVU119
- 402 005e 084A     		ldr	r2, .L27
- 403              	.LVL19:
+ 407              		.loc 1 351 17 is_stmt 0 view .LVU121
+ 408 005e 084A     		ldr	r2, .L27
+ 409              	.LVL19:
  351:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         {/* HSE oscillator clock divided by 2 */
- 404              		.loc 1 351 17 view .LVU120
- 405 0060 5268     		ldr	r2, [r2, #4]
+ 410              		.loc 1 351 17 view .LVU122
+ 411 0060 5268     		ldr	r2, [r2, #4]
  351:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         {/* HSE oscillator clock divided by 2 */
- 406              		.loc 1 351 12 view .LVU121
- 407 0062 12F4003F 		tst	r2, #131072
- 408 0066 05D0     		beq	.L25
+ 412              		.loc 1 351 12 view .LVU123
+ 413 0062 12F4003F 		tst	r2, #131072
+ 414 0066 05D0     		beq	.L25
  353:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         }
- 409              		.loc 1 353 11 is_stmt 1 view .LVU122
+ 415              		.loc 1 353 11 is_stmt 1 view .LVU124
  353:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         }
- 410              		.loc 1 353 46 is_stmt 0 view .LVU123
- 411 0068 094A     		ldr	r2, .L27+16
- 412 006a 02FB03F3 		mul	r3, r2, r3
- 413              	.LVL20:
+ 416              		.loc 1 353 46 is_stmt 0 view .LVU125
+ 417 0068 094A     		ldr	r2, .L27+16
+ 418 006a 02FB03F3 		mul	r3, r2, r3
+ 419              	.LVL20:
  353:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         }
- 414              		.loc 1 353 27 view .LVU124
- 415 006e 054A     		ldr	r2, .L27+4
- 416 0070 1360     		str	r3, [r2]
- 417 0072 D5E7     		b	.L23
- 418              	.LVL21:
- 419              	.L25:
- 357:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         }
- 420              		.loc 1 357 11 is_stmt 1 view .LVU125
- 357:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         }
- 421              		.loc 1 357 39 is_stmt 0 view .LVU126
- 422 0074 044A     		ldr	r2, .L27+8
- 423 0076 02FB03F3 		mul	r3, r2, r3
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 29
+ 420              		.loc 1 353 27 view .LVU126
+ 421 006e 054A     		ldr	r2, .L27+4
+ 422 0070 1360     		str	r3, [r2]
+ 423 0072 D5E7     		b	.L23
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 29
 
 
- 424              	.LVL22:
+ 424              	.LVL21:
+ 425              	.L25:
  357:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         }
- 425              		.loc 1 357 27 view .LVU127
- 426 007a 024A     		ldr	r2, .L27+4
- 427 007c 1360     		str	r3, [r2]
- 428 007e CFE7     		b	.L23
- 429              	.L28:
- 430              		.align	2
- 431              	.L27:
- 432 0080 00100240 		.word	1073876992
- 433 0084 00000000 		.word	.LANCHOR0
- 434 0088 00127A00 		.word	8000000
- 435 008c 00000000 		.word	.LANCHOR1
- 436 0090 00093D00 		.word	4000000
- 437              		.cfi_endproc
- 438              	.LFE68:
- 440              		.global	AHBPrescTable
- 441              		.global	SystemCoreClock
- 442              		.section	.data.AHBPrescTable,"aw"
- 443              		.align	2
- 444              		.set	.LANCHOR1,. + 0
- 447              	AHBPrescTable:
- 448 0000 00000000 		.ascii	"\000\000\000\000\000\000\000\000\001\002\003\004\006"
- 448      00000000 
- 448      01020304 
- 448      06
- 449 000d 070809   		.ascii	"\007\010\011"
- 450              		.section	.data.SystemCoreClock,"aw"
- 451              		.align	2
- 452              		.set	.LANCHOR0,. + 0
- 455              	SystemCoreClock:
- 456 0000 00A24A04 		.word	72000000
- 457              		.text
- 458              	.Letext0:
- 459              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
- 460              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
- 461              		.file 4 "Drivers/CMSIS/CM3/CoreSupport/core_cm3.h"
- 462              		.file 5 "Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.h"
- 463              		.file 6 "Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/stm32f10x.h"
-ARM GAS  C:\cygwin64\tmp\cca0es42.s 			page 30
+ 426              		.loc 1 357 11 is_stmt 1 view .LVU127
+ 357:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         }
+ 427              		.loc 1 357 39 is_stmt 0 view .LVU128
+ 428 0074 044A     		ldr	r2, .L27+8
+ 429 0076 02FB03F3 		mul	r3, r2, r3
+ 430              	.LVL22:
+ 357:Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c ****         }
+ 431              		.loc 1 357 27 view .LVU129
+ 432 007a 024A     		ldr	r2, .L27+4
+ 433 007c 1360     		str	r3, [r2]
+ 434 007e CFE7     		b	.L23
+ 435              	.L28:
+ 436              		.align	2
+ 437              	.L27:
+ 438 0080 00100240 		.word	1073876992
+ 439 0084 00000000 		.word	.LANCHOR0
+ 440 0088 00127A00 		.word	8000000
+ 441 008c 00000000 		.word	.LANCHOR1
+ 442 0090 00093D00 		.word	4000000
+ 443              		.cfi_endproc
+ 444              	.LFE68:
+ 446              		.global	AHBPrescTable
+ 447              		.global	SystemCoreClock
+ 448              		.section	.data.AHBPrescTable,"aw"
+ 449              		.align	2
+ 450              		.set	.LANCHOR1,. + 0
+ 453              	AHBPrescTable:
+ 454 0000 00000000 		.ascii	"\000\000\000\000\000\000\000\000\001\002\003\004\006"
+ 454      00000000 
+ 454      01020304 
+ 454      06
+ 455 000d 070809   		.ascii	"\007\010\011"
+ 456              		.section	.data.SystemCoreClock,"aw"
+ 457              		.align	2
+ 458              		.set	.LANCHOR0,. + 0
+ 461              	SystemCoreClock:
+ 462 0000 00A24A04 		.word	72000000
+ 463              		.text
+ 464              	.Letext0:
+ 465              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 466              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 467              		.file 4 "Drivers/CMSIS/CM3/CoreSupport/core_cm3.h"
+ 468              		.file 5 "Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.h"
+ 469              		.file 6 "Drivers/CMSIS/CM3/DeviceSupport/ST/STM32F10x/stm32f10x.h"
+ARM GAS  C:\cygwin64\tmp\ccUWwHsR.s 			page 30
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 system_stm32f10x.c
-C:\cygwin64\tmp\cca0es42.s:16     .text.SetSysClockTo72:00000000 $t
-C:\cygwin64\tmp\cca0es42.s:23     .text.SetSysClockTo72:00000000 SetSysClockTo72
-C:\cygwin64\tmp\cca0es42.s:189    .text.SetSysClockTo72:000000bc $d
-C:\cygwin64\tmp\cca0es42.s:195    .text.SetSysClock:00000000 $t
-C:\cygwin64\tmp\cca0es42.s:201    .text.SetSysClock:00000000 SetSysClock
-C:\cygwin64\tmp\cca0es42.s:221    .text.SystemInit:00000000 $t
-C:\cygwin64\tmp\cca0es42.s:228    .text.SystemInit:00000000 SystemInit
-C:\cygwin64\tmp\cca0es42.s:279    .text.SystemInit:0000003c $d
-C:\cygwin64\tmp\cca0es42.s:285    .text.SystemCoreClockUpdate:00000000 $t
-C:\cygwin64\tmp\cca0es42.s:292    .text.SystemCoreClockUpdate:00000000 SystemCoreClockUpdate
-C:\cygwin64\tmp\cca0es42.s:432    .text.SystemCoreClockUpdate:00000080 $d
-C:\cygwin64\tmp\cca0es42.s:447    .data.AHBPrescTable:00000000 AHBPrescTable
-C:\cygwin64\tmp\cca0es42.s:455    .data.SystemCoreClock:00000000 SystemCoreClock
-C:\cygwin64\tmp\cca0es42.s:443    .data.AHBPrescTable:00000000 $d
-C:\cygwin64\tmp\cca0es42.s:451    .data.SystemCoreClock:00000000 $d
+C:\cygwin64\tmp\ccUWwHsR.s:16     .text.SetSysClockTo72:00000000 $t
+C:\cygwin64\tmp\ccUWwHsR.s:23     .text.SetSysClockTo72:00000000 SetSysClockTo72
+C:\cygwin64\tmp\ccUWwHsR.s:189    .text.SetSysClockTo72:000000bc $d
+C:\cygwin64\tmp\ccUWwHsR.s:195    .text.SetSysClock:00000000 $t
+C:\cygwin64\tmp\ccUWwHsR.s:201    .text.SetSysClock:00000000 SetSysClock
+C:\cygwin64\tmp\ccUWwHsR.s:221    .text.SystemInit:00000000 $t
+C:\cygwin64\tmp\ccUWwHsR.s:228    .text.SystemInit:00000000 SystemInit
+C:\cygwin64\tmp\ccUWwHsR.s:284    .text.SystemInit:00000044 $d
+C:\cygwin64\tmp\ccUWwHsR.s:291    .text.SystemCoreClockUpdate:00000000 $t
+C:\cygwin64\tmp\ccUWwHsR.s:298    .text.SystemCoreClockUpdate:00000000 SystemCoreClockUpdate
+C:\cygwin64\tmp\ccUWwHsR.s:438    .text.SystemCoreClockUpdate:00000080 $d
+C:\cygwin64\tmp\ccUWwHsR.s:453    .data.AHBPrescTable:00000000 AHBPrescTable
+C:\cygwin64\tmp\ccUWwHsR.s:461    .data.SystemCoreClock:00000000 SystemCoreClock
+C:\cygwin64\tmp\ccUWwHsR.s:449    .data.AHBPrescTable:00000000 $d
+C:\cygwin64\tmp\ccUWwHsR.s:457    .data.SystemCoreClock:00000000 $d
 
 NO UNDEFINED SYMBOLS
