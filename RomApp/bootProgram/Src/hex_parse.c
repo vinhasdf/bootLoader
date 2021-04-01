@@ -352,13 +352,13 @@ uint8_t Hex_receive(void)
                             /* Error to erase */
                             Hex_state = HEX_FAIL;
                             FLASH_Lock();
-                            sprintf(buff, "Program error: %d", flash_status);
+                            sprintf(buff, "Program error: %d at %d\n", flash_status, (int)i);
                             hex_transmitStr(buff);
                             retVal = 1;
                             return retVal;
                         }
                     }
-                    if ((line.length % 4) == 0)
+                    if ((line.length % 4) != 0)
                     {
                         line.buff[i + 1] = line.add[i + 1];     /* Save old value from i + 1 memory */
                         line.buff[i + 2] = line.add[i + 2];
@@ -370,7 +370,7 @@ uint8_t Hex_receive(void)
                             /* Error to erase */
                             Hex_state = HEX_FAIL;
                             FLASH_Lock();
-                            sprintf(buff, "Program error: %d", flash_status);
+                            sprintf(buff, "Program error: %d at %d\n", flash_status, (int)i);
                             hex_transmitStr(buff);
                             retVal = 1;
                             return retVal;
